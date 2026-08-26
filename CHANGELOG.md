@@ -3,6 +3,13 @@
 Notable changes per release. Both packages in this workspace are versioned and
 released together.
 
+## 0.0.2
+
+No change to either package. `0.0.1` was pushed by hand because the names were
+unclaimed and npm asks for a second factor to create one; this release goes out
+through the publish workflow on trusted publishing, which is the path every
+release after it takes.
+
 ## 0.0.1
 
 The first release. Two packages: `@ankimd/core`, a library, and `@ankimd/cli`,
