@@ -35,6 +35,11 @@ The format defines two conformance classes, and this package implements both.
 Card bodies are verbatim source slices, so nested lists, code fences, tables and
 deeper headings all survive a round trip untouched.
 
+The format leaves some rules to the producer rather than requiring them, such as
+whether a bullet-less answer is acceptable. Those belong to the caller, and
+**`scanLines`** is what they are checked over: a line scan that knows which lines
+are inside a fence, so a rule about bullets does not fire on a code sample.
+
 ## Anki packages
 
 **`toApkg`** returns the package bytes and **`writeApkg`** writes them to a path.
