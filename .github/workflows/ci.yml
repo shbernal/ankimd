@@ -68,7 +68,8 @@ jobs:
         working-directory: cli
         run: |
           node --input-type=module -e "import('@ankimd/core')"
-          node dist/index.js
+          node dist/bin.js --version
+          node dist/bin.js --help
 
       - name: Verify package contents
         run: |

@@ -15,24 +15,45 @@ a plain Markdown format for flashcards that stays readable in Obsidian and in a
 diff. `.apkg` reading and writing itself belongs to
 [`@shbernal/anki-apkg-export`](https://github.com/shbernal/anki-apkg-export).
 
-## Status
-
-Pre-release, and neither package is published yet. `@ankimd/core` reads and
-writes Flashcard Markdown and converts a deck to an `.apkg` and back, with the
-conformance corpus passing in every direction. The command line is not written.
-This section goes away with the first release.
-
 ## Install
+
+The command line:
+
+```sh
+pnpm add -g @ankimd/cli
+ankimd build notes.md -o deck.apkg
+ankimd extract deck.apkg -o notes.md
+```
+
+The library:
 
 ```sh
 pnpm add @ankimd/core
 ```
 
-For the command line:
+## What a deck looks like
 
-```sh
-pnpm add -g @ankimd/cli
+```markdown
+# Botany
+
+## Leaf venation patterns
+
+- Parallel venation is typical of monocots
+- Reticulate venation is typical of dicots
+
+#morphology
 ```
+
+A card is a `##` heading and what follows it. A `***` splits the front from the
+back, `#tags` on their own line are metadata, and the body is arbitrary Markdown:
+nested lists, code fences and images all survive.
+
+## Going back
+
+`ankimd extract` reads a package into Markdown. That direction is lossy, and
+[docs/round-trip.md](docs/round-trip.md) is the table of what survives it. It
+reads notes and nothing else: **scheduling and review history are not in what
+comes out.** Edit a deck you are studying in Anki.
 
 ## License
 

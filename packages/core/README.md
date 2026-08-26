@@ -76,10 +76,6 @@ change the file, and doing it again changes nothing.
 **It does not read scheduling.** A deck extracted to Markdown and written back is
 a new deck, with no review history at all. Edit a deck you are studying in Anki.
 
-## Status
-
-Pre-release, and not published yet.
-
 ## Install
 
 ```sh

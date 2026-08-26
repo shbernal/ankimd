@@ -23,7 +23,7 @@ import { markedHighlight } from "marked-highlight";
  * @returns HTML. Whatever comes back is inserted into a `<code>` element as-is, so an
  *   implementation that cannot handle the language must return the code escaped.
  */
-export type Highlighter = (code: string, language: string | undefined) => string;
+export type Highlighter = (code: string, language?: string) => string;
 
 /**
  * A renderer, configured once and reused for every field of a deck.

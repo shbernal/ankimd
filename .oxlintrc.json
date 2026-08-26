@@ -39,8 +39,10 @@
     "import/no-nodejs-modules": "off",
 
     // Both packages publish named exports rather than a single default. That is
-    // the API decision, not something a lint fix gets to make.
+    // the API decision, not something a lint fix gets to make, and it holds for
+    // a module with one export as much as for one with six.
     "import/no-named-export": "off",
+    "import/prefer-default-export": "off",
 
     // Types and helpers are declared next to the code they describe, so exports
     // are interleaved rather than gathered at the bottom. Both rules only
@@ -137,6 +139,27 @@
     ]
   },
   "overrides": [
+    {
+      // The yargs wiring. Its builder and its parsed arguments are objects yargs
+      // owns and hands to a callback, and there is no way to restate either as
+      // readonly from here. The parser itself is one expression declaring the
+      // whole command surface: splitting it to fit a line budget would scatter
+      // the thing a reader most wants to see in one piece.
+      "files": ["cli/src/index.ts"],
+      "rules": {
+        "max-lines-per-function": "off",
+        "typescript/prefer-readonly-parameter-types": "off"
+      }
+    },
+    {
+      // Prism registers a language by being imported, one module per language.
+      // There is nothing to assign: the import *is* the registration, and the
+      // order matters, which is why `markup-templating` carries a note.
+      "files": ["cli/src/highlight.ts"],
+      "rules": {
+        "import/no-unassigned-import": "off"
+      }
+    },
     {
       // `describe`/`it` callbacks are declarative blocks, not functions with
       // logic, so a suite's length and statement count track how many cases it
