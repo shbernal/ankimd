@@ -91,13 +91,11 @@ producer while still loading for the consumer, and every canonical case converts
 to a package with nothing to report.
 
 `test/fixtures/deck.apkg` is a committed package this suite rebuilds and compares
-byte for byte. Real Anki is what says it is importable, through the oracle in
-`@shbernal/anki-apkg-export`:
-
-```sh
-uv run ../anki-apkg-export/tools/oracle/check_apkg.py \
-  packages/core/test/fixtures/deck.apkg
-```
+byte for byte. That the bytes are the ones we meant to write is what the suite
+proves; that Anki will take them is checked separately, against the real Anki
+library, through the oracle
+[`@shbernal/anki-apkg-export`](https://github.com/shbernal/anki-apkg-export)
+carries in `tools/oracle/`.
 
 Run `pnpm run fixture:regen` to adopt an intended change to the emitted bytes,
 and read the diff before you do.
