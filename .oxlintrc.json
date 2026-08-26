@@ -68,6 +68,13 @@
     // `sort-imports`: the formatter owns how a literal is spelled.
     "unicorn/number-literal-case": "off",
 
+    // A budget rather than a ceiling, and raised from the default 10 deliberately. The
+    // functions that sit near it are the ones that read a grammar: a frontmatter block,
+    // a card body, a run of line numbers. Each has one job and no seam inside it, so
+    // splitting one to fit ten would trade a readable function for a pair of halves
+    // with no name of their own. Anything past this has earned a second look.
+    "max-statements": ["error", 14],
+
     // 0, 1 and -1 are the empty/first/sentinel values that show up in any
     // scanner and carry no meaning a constant could add. Everything else gets
     // a name.
@@ -75,6 +82,23 @@
       "error",
       { "ignore": [-1, 0, 1], "ignoreArrayIndexes": true, "ignoreDefaultValues": true }
     ],
+
+    // `null` is in the published API rather than an accident: a deck with no `#`
+    // heading has `title: null`, and the conformance corpus compares against that
+    // literal. `undefined` would make an absent title indistinguishable from a field
+    // nobody set, which is the distinction the corpus is asserting.
+    "unicorn/no-null": "off",
+
+    // Every pattern here has one or two groups read on the line below it, positionally
+    // and immediately. A name would buy nothing at that distance and would route the
+    // read through `match.groups?.x`, which `noUncheckedIndexedAccess` makes no safer.
+    "prefer-named-capture-group": "off",
+
+    // Rewriting a two-branch value selection as a statement forces a `let` that
+    // `init-declarations` then objects to, and adds a statement to functions this
+    // config caps at ten. The rules disagree; the expression form wins because it is
+    // the one the other two rules are happy with.
+    "no-ternary": "off",
 
     // Contradicts `vitest/prefer-called-times`, which is also on and rewrites
     // the result straight back. Keeping the explicit count is the choice that
@@ -93,7 +117,16 @@
           { "from": "lib", "name": "Date" },
           { "from": "lib", "name": "Error" },
           { "from": "lib", "name": "Uint8Array" },
-          { "from": "package", "package": "@types/node", "name": "Buffer" }
+          { "from": "package", "package": "@types/node", "name": "Buffer" },
+
+          // A regex match is a mutable array handed over by the engine. Every callback
+          // here only destructures it, and there is no way to restate the lib type.
+          { "from": "lib", "name": "RegExpExecArray" },
+          { "from": "lib", "name": "RegExpMatchArray" },
+
+          // The accumulator the document walk threads through its per-line step. It is
+          // mutated on purpose, which is the one thing this rule has no way to say.
+          { "from": "file", "name": "Walk" }
         ]
       }
     ]
@@ -111,6 +144,19 @@
         "max-statements": "off",
         "vitest/max-expects": "off",
         "vitest/no-hooks": "off",
+
+        // The suites read the conformance corpus off disk, and `JSON.parse` returns
+        // `any`. Asserting the shape at that boundary is the only thing available; a
+        // guard would be a second, hand-written copy of the corpus schema whose drift
+        // nothing would catch.
+        "typescript/no-unsafe-type-assertion": "off",
+
+        // Both contradict `vitest/prefer-strict-boolean-matchers`, which is also on and
+        // rewrites the result straight back. The strict matcher wins: these assertions
+        // are about predicates that return exactly `true` or `false`, and `toBeFalsy`
+        // would also pass on `undefined`, which is the bug worth catching.
+        "vitest/prefer-to-be-falsy": "off",
+        "vitest/prefer-to-be-truthy": "off",
 
         // Fixtures are handed to a suite by `beforeEach`, so there is no value
         // to initialize them with at the point of declaration.

@@ -4,8 +4,8 @@ Flashcard Markdown decks to and from Anki packages.
 
 This workspace holds two packages:
 
-- **`@ankimd/core`**, a library that converts between a deck and an `.apkg`
-  file. It takes a deck and a path.
+- **`@ankimd/core`**, a library that reads and writes Flashcard Markdown and
+  converts between a deck and an `.apkg` file. It takes a deck and a path.
 - **`@ankimd/cli`**, which ships the `ankimd` binary and everything the library
   deliberately leaves out: reading files off disk, config, templates.
 
@@ -16,8 +16,10 @@ diff. `.apkg` reading and writing itself belongs to
 
 ## Status
 
-Pre-release. Neither package is published yet, and the conversion is not written.
-This section goes away with the first release.
+Pre-release, and neither package is published yet. Markdown reading and writing
+are done and the conformance corpus passes in both directions. Anki package
+conversion and the command line are not written. This section goes away with the
+first release.
 
 ## Install
 

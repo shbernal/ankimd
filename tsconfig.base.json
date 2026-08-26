@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    // Node 24 is the floor, which is well past this. ES2023 is what the code actually
+    // reaches for, `Array#toSorted` being the first of them.
+    "target": "ES2023",
+    "lib": ["ES2023"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "declaration": true,

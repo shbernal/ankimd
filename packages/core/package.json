@@ -38,7 +38,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@shbernal/anki-apkg-export": "^6.0.0"
+    "@shbernal/anki-apkg-export": "^6.0.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "flashcard-md-spec": "^1.0.0"
