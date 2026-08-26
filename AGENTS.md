@@ -19,6 +19,10 @@ Flashcard Markdown decks to and from Anki packages.
 - Key commands
   - `pnpm run lint`, `pnpm run format:check`, `pnpm run typecheck`, `pnpm test`,
     `pnpm run build`. CI runs those five by name.
+  - `lint` builds first, on purpose: oxlint runs `--type-aware`, and the CLI's
+    types for `@ankimd/core` are the ones in its `dist/`. Without the build a
+    clean checkout lints the whole CLI as `any` and reports fifty findings about
+    nothing. Turbo caches it, so on a warm tree it costs nothing.
   - `pnpm run prose` checks the prose files charcheck.config.js names.
 
 - Tooling

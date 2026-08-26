@@ -11,7 +11,7 @@
     "clean": "turbo clean",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "lint": "oxlint --type-aware --deny-warnings",
+    "lint": "turbo build --output-logs=errors-only && oxlint --type-aware --deny-warnings",
     "prose": "charcheck",
     "test": "turbo test",
     "test:coverage": "turbo test:coverage",
