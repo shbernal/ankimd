@@ -1,7 +1,15 @@
 # Changelog
 
-Notable changes per release. Both packages in this workspace are versioned and
+Notable changes per release. Every package in this workspace is versioned and
 released together.
+
+## 0.0.3
+
+A third package: **`ankimd`**, the unscoped name, so that `npx ankimd` reaches
+this command rather than an empty name on the registry. It holds no code. It
+depends on `@ankimd/cli` and runs its binary, which `@ankimd/cli` now also
+exposes as the `./bin` subpath. Name `@ankimd/cli` in a dependency list; this
+one exists for `npx`.
 
 ## 0.0.2
 
