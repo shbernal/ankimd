@@ -8,6 +8,8 @@ Flashcard Markdown decks to and from Anki packages.
     else. No config loading, no globbing, no syntax highlighting, no network.
   - `cli` is `@ankimd/cli` and ships the `ankimd` binary. Everything the library
     refuses lives here.
+  - `packages/ankimd` is the unscoped name on npm, a pointer at `@ankimd/cli`
+    that makes `npx ankimd` resolve. One import, and it stays that way.
   - The dependency graph enforces that split, so a library consumer never pulls
     the CLI's dependencies. Keep it that way.
   - `.apkg` reading and writing is not here. It is `@shbernal/anki-apkg-export`,

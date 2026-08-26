@@ -56,3 +56,7 @@ jobs:
 
       - name: Publish @ankimd/cli
         run: pnpm --filter @ankimd/cli publish --no-git-checks --access public
+
+      # The unscoped name, last: it is a pointer at the CLI and nothing else.
+      - name: Publish ankimd
+        run: pnpm --filter ankimd publish --no-git-checks --access public

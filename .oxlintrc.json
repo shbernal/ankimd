@@ -152,6 +152,16 @@
       }
     },
     {
+      // The unscoped `ankimd` package is a pointer and holds no code. Its binary
+      // imports the real one for the side effect of running it, so there is
+      // nothing to assign: an assignment here would be the dead variable the
+      // rule is trying to prevent.
+      "files": ["packages/ankimd/bin/ankimd.js"],
+      "rules": {
+        "import/no-unassigned-import": "off"
+      }
+    },
+    {
       // Prism registers a language by being imported, one module per language.
       // There is nothing to assign: the import *is* the registration, and the
       // order matters, which is why `markup-templating` carries a note.

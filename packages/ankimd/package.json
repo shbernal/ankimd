@@ -1,0 +1,36 @@
+{
+  "name": "ankimd",
+  "version": "0.0.2",
+  "description": "The ankimd command. An alias for @ankimd/cli, which is where the code lives.",
+  "keywords": [
+    "anki",
+    "apkg",
+    "cli",
+    "flashcards",
+    "markdown",
+    "spaced-repetition"
+  ],
+  "license": "MIT",
+  "author": "shbernal <shbernal.01@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shbernal/ankimd.git",
+    "directory": "packages/ankimd"
+  },
+  "bin": {
+    "ankimd": "bin/ankimd.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@ankimd/cli": "workspace:^"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

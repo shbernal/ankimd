@@ -2,15 +2,17 @@
 
 Flashcard Markdown decks to and from Anki packages.
 
-This workspace holds two packages:
+This workspace holds three packages:
 
 - **`@ankimd/core`**, a library that reads and writes Flashcard Markdown and
   converts between a deck and an `.apkg` file. It takes a deck and a path.
   Going back is lossy; [docs/round-trip.md](docs/round-trip.md) is the table.
 - **`@ankimd/cli`**, which ships the `ankimd` binary and everything the library
   deliberately leaves out: reading files off disk, config, templates.
+- **`ankimd`**, the unscoped name, so that `npx ankimd` reaches the command. It
+  holds no code and depends on `@ankimd/cli`.
 
-Both implement [Flashcard Markdown](https://github.com/shbernal/flashcard-md-spec),
+The first two implement [Flashcard Markdown](https://github.com/shbernal/flashcard-md-spec),
 a plain Markdown format for flashcards that stays readable in Obsidian and in a
 diff. `.apkg` reading and writing itself belongs to
 [`@shbernal/anki-apkg-export`](https://github.com/shbernal/anki-apkg-export).
@@ -23,6 +25,12 @@ The command line:
 pnpm add -g @ankimd/cli
 ankimd build notes.md -o deck.apkg
 ankimd extract deck.apkg -o notes.md
+```
+
+Or without installing, through the unscoped name:
+
+```sh
+npx ankimd build notes.md -o deck.apkg
 ```
 
 The library:
