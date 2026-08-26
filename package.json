@@ -1,0 +1,36 @@
+{
+  "name": "ankimd-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Flashcard Markdown to and from Anki packages.",
+  "license": "MIT",
+  "author": "shbernal <shbernal.01@gmail.com>",
+  "type": "module",
+  "scripts": {
+    "build": "turbo build",
+    "clean": "turbo clean",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --type-aware --deny-warnings",
+    "prose": "charcheck",
+    "test": "turbo test",
+    "test:coverage": "turbo test:coverage",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "charcheck": "^0.3.0",
+    "lefthook": "^2.1.10",
+    "oxfmt": "^0.64.0",
+    "oxlint": "^1.79.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "turbo": "^2.10.7",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.23.0+sha512.f00082e5b283a199b74e079da28d155c008fe232f44c8a06ea7ddfa014ecf719fc362f790ecc67b28106ddac2afb24c49a9a079159da560b2ce7d1e98efd11af"
+}

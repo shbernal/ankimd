@@ -1,0 +1,121 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "vitest", "promise"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error",
+    "pedantic": "error",
+    "style": "error"
+  },
+  "ignorePatterns": ["dist/", "node_modules/", "coverage/", "**/*.d.ts"],
+  "rules": {
+    // Conventions shared with @shbernal/anki-apkg-export, which is the only
+    // other repo in this family on this toolchain.
+    "typescript/consistent-type-imports": [
+      "warn",
+      { "prefer": "type-imports", "fixStyle": "inline-type-imports" }
+    ],
+    "typescript/explicit-function-return-type": "off",
+    "typescript/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "import/extensions": ["error", "ignorePackages", { "ts": "never" }],
+
+    // @ankimd/cli is a terminal program, so writing to stdout is its output
+    // rather than a leftover debugging statement.
+    "no-console": "off",
+
+    // Node-only packages, and `node:` says so at the import rather than in
+    // prose. Without the rule the two spellings drift apart across src and test.
+    "unicorn/prefer-node-protocol": "error",
+
+    // `sortImports` in .oxfmtrc.json already orders imports and oxfmt rewrites
+    // on every commit. Leaving this on means the formatter and the linter each
+    // impose a different order and fight over the same lines.
+    "sort-imports": "off",
+
+    // These are Node packages: the CLI reads files and the library resolves
+    // paths. The rule exists to keep browser bundles free of builtins, which is
+    // the opposite of the target here.
+    "import/no-nodejs-modules": "off",
+
+    // Both packages publish named exports rather than a single default. That is
+    // the API decision, not something a lint fix gets to make.
+    "import/no-named-export": "off",
+
+    // Types and helpers are declared next to the code they describe, so exports
+    // are interleaved rather than gathered at the bottom. Both rules only
+    // relocate existing statements; neither changes what a module exposes.
+    "import/group-exports": "off",
+    "import/exports-last": "off",
+
+    // Vitest globals are deliberately not enabled, so the test files import
+    // `describe`/`it`/`expect` explicitly and tsc needs those imports to
+    // resolve them. This rule's autofix deletes them and breaks `typecheck`.
+    "vitest/no-importing-vitest-globals": "off",
+
+    // `consistent-type-imports` above is set to `inline-type-imports`; this rule
+    // demands the opposite. Leaving both on makes the two fixers undo each
+    // other.
+    "import/consistent-type-specifier-style": "off",
+
+    // oxlint defaults `one-var` to "always", which would collapse every run of
+    // consecutive declarations into one comma-chained statement. One binding
+    // per statement is the convention, so the rule stays on pointed at it.
+    "one-var": ["error", "never"],
+
+    // oxfmt normalizes hexadecimal literals to lowercase and rewrites on every
+    // commit, while this rule wants them uppercase. Same standoff as
+    // `sort-imports`: the formatter owns how a literal is spelled.
+    "unicorn/number-literal-case": "off",
+
+    // 0, 1 and -1 are the empty/first/sentinel values that show up in any
+    // scanner and carry no meaning a constant could add. Everything else gets
+    // a name.
+    "no-magic-numbers": [
+      "error",
+      { "ignore": [-1, 0, 1], "ignoreArrayIndexes": true, "ignoreDefaultValues": true }
+    ],
+
+    // Contradicts `vitest/prefer-called-times`, which is also on and rewrites
+    // the result straight back. Keeping the explicit count is the choice that
+    // reads the same whether the expected number is 1 or not.
+    "vitest/prefer-called-once": "off",
+
+    // The rule is only workable with its documented escape hatches. Deck media
+    // is `Uint8Array`/`Buffer` and the apkg timestamps are `Date`, all of which
+    // mutate through methods rather than properties.
+    "typescript/prefer-readonly-parameter-types": [
+      "error",
+      {
+        "treatMethodsAsReadonly": true,
+        "allow": [
+          { "from": "lib", "name": "ArrayBuffer" },
+          { "from": "lib", "name": "Date" },
+          { "from": "lib", "name": "Error" },
+          { "from": "lib", "name": "Uint8Array" },
+          { "from": "package", "package": "@types/node", "name": "Buffer" }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      // `describe`/`it` callbacks are declarative blocks, not functions with
+      // logic, so a suite's length and statement count track how many cases it
+      // covers. Splitting a cohesive suite to fit a budget would make the tests
+      // worse rather than smaller.
+      "files": ["**/test/**"],
+      "rules": {
+        "max-lines": "off",
+        "max-lines-per-function": "off",
+        "max-statements": "off",
+        "vitest/max-expects": "off",
+        "vitest/no-hooks": "off",
+
+        // Fixtures are handed to a suite by `beforeEach`, so there is no value
+        // to initialize them with at the point of declaration.
+        "init-declarations": "off"
+      }
+    }
+  ]
+}

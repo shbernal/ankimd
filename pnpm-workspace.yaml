@@ -1,0 +1,18 @@
+packages:
+  - cli
+  - packages/*
+
+minimumReleaseAgeStrict: true
+# Own packages, so the cooldown that exists to catch a compromised release from
+# a stranger buys nothing here.
+minimumReleaseAgeExclude:
+  - "@shbernal/*"
+  - charcheck
+  - flashcard-md-spec@1.0.0
+
+allowBuilds:
+  esbuild: true
+  lefthook: true
+onlyBuiltDependencies:
+  - esbuild
+  - lefthook

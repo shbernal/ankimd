@@ -1,0 +1,50 @@
+{
+  "name": "@ankimd/cli",
+  "version": "0.0.1",
+  "description": "Command line interface for converting Flashcard Markdown decks to and from Anki packages.",
+  "keywords": [
+    "anki",
+    "apkg",
+    "cli",
+    "flashcards",
+    "markdown",
+    "spaced-repetition"
+  ],
+  "license": "MIT",
+  "author": "shbernal <shbernal.01@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shbernal/ankimd.git",
+    "directory": "cli"
+  },
+  "bin": {
+    "ankimd": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ankimd/core": "workspace:^"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "@ankimd/core",
+  "version": "0.0.1",
+  "description": "Convert Flashcard Markdown decks to and from Anki packages.",
+  "keywords": [
+    "anki",
+    "apkg",
+    "flashcards",
+    "markdown",
+    "spaced-repetition"
+  ],
+  "license": "MIT",
+  "author": "shbernal <shbernal.01@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shbernal/ankimd.git",
+    "directory": "packages/core"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shbernal/anki-apkg-export": "^6.0.0"
+  },
+  "devDependencies": {
+    "flashcard-md-spec": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
