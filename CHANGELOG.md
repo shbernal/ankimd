@@ -3,6 +3,14 @@
 Notable changes per release. Every package in this workspace is versioned and
 released together.
 
+## 0.0.4
+
+`@ankimd/core` exports its line scan: `scanLines`, `splitSourceLines`, `isBlank`
+and the `ScannedLine` type. The format leaves some rules to the producer rather
+than requiring them, and a producer checking those over its own output needs to
+know which lines are inside a fence. Without this each one carries a second copy
+of the fence tracking, which is the duplication this package exists to end.
+
 ## 0.0.3
 
 A third package: **`ankimd`**, the unscoped name, so that `npx ankimd` reaches
