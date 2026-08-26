@@ -50,10 +50,30 @@ export const extractTagLines = (slice: string): { body: string; tags: string[] }
   return { body: toSlice(kept), tags: uniqueTags(tags) };
 };
 
+/*
+ * The tags a card's trailing line has to carry.
+ *
+ * `cardTags` is the source of truth, because a deck built from something other
+ * than Markdown has tags and no lines to have found them on. What is left out is
+ * a tag written inside a sentence: it is already visible where the author put it,
+ * and repeating it at the end of the card would be a second copy of one tag.
+ */
+const trailingTags = (card: Card, bodies: readonly string[]): string[] => {
+  const inline = new Set(
+    bodies.flatMap((body) => splitSourceLines(body).flatMap((line) => tagsInLine(line))),
+  );
+
+  return uniqueTags(card.cardTags.filter((tag) => !inline.has(tag)));
+};
+
 export const renderCard = (card: Card): string => {
   const front = extractTagLines(card.frontBody);
   const back = extractTagLines(card.back);
-  const tags = uniqueTags([...front.tags, ...back.tags]);
+  const tags = uniqueTags([
+    ...front.tags,
+    ...back.tags,
+    ...trailingTags(card, [front.body, back.body]),
+  ]);
 
   const blocks = [`## ${card.headingText}`];
 

@@ -11,7 +11,10 @@ Flashcard Markdown decks to and from Anki packages.
   - The dependency graph enforces that split, so a library consumer never pulls
     the CLI's dependencies. Keep it that way.
   - `.apkg` reading and writing is not here. It is `@shbernal/anki-apkg-export`,
-    which owns the format in both directions.
+    which owns the format in both directions. `packages/core/src/anki/` is the
+    mapping between Anki's model and a `Deck`, never the container.
+  - `docs/round-trip.md` is the loss table. Anything that changes what survives
+    a conversion changes that page in the same commit.
 
 - Key commands
   - `pnpm run lint`, `pnpm run format:check`, `pnpm run typecheck`, `pnpm test`,

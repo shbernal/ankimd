@@ -82,3 +82,51 @@ export const toAnkiTags = (
 
   return { diagnostics, tags: uniqueTags(mapped) };
 };
+
+/** Everything §6.2 does not allow in a tag, in runs, so a swap keeps one character. */
+const NOT_A_TAG_CHARACTER = /[^\p{L}\p{N}_\-/]+/gu;
+
+/**
+ * The other half of §6.5's mapping, from Anki's tags back to the file's.
+ *
+ * Anki nests with `::` where the file nests with `/`, and it is far more permissive
+ * about the rest: a tag there may hold punctuation and emoji that §6.2's grammar has
+ * no room for. Those are rewritten rather than dropped, and a tag that survives the
+ * rewrite as nothing at all, or as digits only, is reported instead.
+ */
+export const fromAnkiTags = (
+  tags: readonly string[],
+): { tags: string[]; diagnostics: Diagnostic[] } => {
+  const diagnostics: Diagnostic[] = [];
+  const kept: string[] = [];
+
+  for (const tag of tags) {
+    const nested = tag.replaceAll("::", "/");
+    const sanitized = nested.replaceAll(NOT_A_TAG_CHARACTER, "_");
+
+    if (isTagToken(sanitized)) {
+      if (sanitized !== nested) {
+        diagnostics.push(
+          diagnostic(
+            "tag-sanitized",
+            `the Anki tag "${tag}" holds characters this format's tags cannot; ` +
+              `it was written as "${sanitized}".`,
+          ),
+        );
+      }
+
+      kept.push(sanitized);
+    } else {
+      diagnostics.push(
+        diagnostic(
+          "unrepresentable-content",
+          `the Anki tag "${tag}" has no spelling in this format and was left out of ` +
+            `the deck. Tags are letters, digits, "_", "-" and "/", with at least one ` +
+            `character that is not a digit.`,
+        ),
+      );
+    }
+  }
+
+  return { diagnostics, tags: uniqueTags(kept) };
+};

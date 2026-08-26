@@ -7,7 +7,7 @@ diff.
 ## What it does
 
 ```ts
-import { localMedia, parseMarkdown, renderMarkdown, writeApkg } from "@ankimd/core";
+import { localMedia, parseMarkdown, readDeck, renderMarkdown, writeApkg } from "@ankimd/core";
 
 const { deck, diagnostics } = parseMarkdown(source);
 const canonical = renderMarkdown(deck);
@@ -15,6 +15,8 @@ const canonical = renderMarkdown(deck);
 const found = await writeApkg(deck, "botany.apkg", {
   resolveMedia: localMedia("./notes"),
 });
+
+const { markdown, media } = await readDeck(await readFile("botany.apkg"));
 ```
 
 The format defines two conformance classes, and this package implements both.
@@ -55,6 +57,24 @@ Four things the caller decides, because this package cannot:
 
 Pass `now` to pin every timestamp in the package, which makes the bytes
 reproducible across processes.
+
+## Anki packages, back to Markdown
+
+**`readDeck`** takes the bytes of a package and returns a deck, the canonical
+Markdown for it, and the media that deck refers to. **`extractDeck`** is the same
+mapping over a package someone else already read.
+
+This direction is lossy and every loss is either documented or reported. It maps
+two-field, non-cloze notes and counts everything else by note type; it turns a
+field's HTML back into Markdown, keeping nested lists as indentation and demoting
+a heading that would otherwise open a card. What survives and what does not is
+the table in [docs/round-trip.md](../../docs/round-trip.md).
+
+The one promise it makes is a fixpoint: Markdown to package to Markdown may
+change the file, and doing it again changes nothing.
+
+**It does not read scheduling.** A deck extracted to Markdown and written back is
+a new deck, with no review history at all. Edit a deck you are studying in Anki.
 
 ## Status
 

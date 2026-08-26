@@ -6,8 +6,12 @@
  * read as diagnostics. `parseCanonical` is the producer: it refuses anything that is
  * not canonical form. `renderMarkdown` emits canonical form only.
  *
- * `toApkg` and `writeApkg` take a deck the other way, to the package Anki imports.
+ * `toApkg` and `writeApkg` take a deck the other way, to the package Anki imports,
+ * and `readDeck` brings one back. That direction is lossy, and `docs/round-trip.md`
+ * is the table of what does and does not survive it.
  */
+
+export { extractDeck, type ExtractOptions, type ExtractResult, readDeck } from "./anki/extract.js";
 
 export {
   type ApkgOptions,
@@ -35,4 +39,11 @@ export {
 } from "./spec/canonical.js";
 export { type ParseResult, parseMarkdown } from "./spec/parse.js";
 export { renderCard, renderMarkdown } from "./spec/render.js";
-export { isTagsOnlyLine, isTagToken, tagsInLine, toAnkiTags, uniqueTags } from "./spec/tags.js";
+export {
+  fromAnkiTags,
+  isTagsOnlyLine,
+  isTagToken,
+  tagsInLine,
+  toAnkiTags,
+  uniqueTags,
+} from "./spec/tags.js";

@@ -28,9 +28,11 @@ export type Highlighter = (code: string, language: string | undefined) => string
 /**
  * A renderer, configured once and reused for every field of a deck.
  *
- * `breaks` is on: a single newline becomes a `<br>`. Cards are written as short lines
- * far more often than as reflowed prose, and a card whose lines silently join into one
- * paragraph reads as a bug to whoever wrote it.
+ * `breaks` is off, which is CommonMark: a single newline inside a paragraph is a
+ * space. §5.4 makes a card body arbitrary Markdown and points at CommonMark for what
+ * that means, so a deck should render the way the same text renders in the vault it
+ * was written in. It is also what makes the round trip exact, since a hard break
+ * comes back out of Anki as one and a soft break has to come back as a soft one.
  */
 export const createHtmlRenderer = (highlight?: Highlighter) => {
   const marked = new Marked();
@@ -39,7 +41,7 @@ export const createHtmlRenderer = (highlight?: Highlighter) => {
     marked.use(markedHighlight({ highlight: (code, language) => highlight(code, language) }));
   }
 
-  marked.setOptions({ breaks: true, gfm: true, pedantic: false });
+  marked.setOptions({ breaks: false, gfm: true, pedantic: false });
 
   /* `parse` is synchronous with the options above and typed as if it might not be,
      because an extension can make it asynchronous. Promising a promise is what lets a
