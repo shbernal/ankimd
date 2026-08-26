@@ -1,6 +1,6 @@
 import { parse as parseYaml } from "yaml";
 
-import { type Diagnostic, diagnostic } from "../diagnostics.js";
+import { type Diagnostic, diagnostic, reasonOf } from "../diagnostics.js";
 
 /*
  * Flashcard Markdown §4.1. The block is optional, must be first in the file, and
@@ -88,7 +88,7 @@ const parseBlock = (block: string): YamlBlock => {
   try {
     return { parsed: parseYaml(block) as unknown };
   } catch (error) {
-    return { reason: error instanceof Error ? error.message : String(error) };
+    return { reason: reasonOf(error) };
   }
 };
 

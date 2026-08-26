@@ -1,14 +1,19 @@
-import fs from "node:fs/promises";
-import { createRequire } from "node:module";
-import path from "node:path";
-
 import { describe, expect, it } from "vitest";
 
 import type { Deck } from "../src/deck.js";
-import type { DiagnosticCode } from "../src/diagnostics.js";
 import { checkCanonical } from "../src/spec/canonical.js";
 import { parseMarkdown } from "../src/spec/parse.js";
 import { renderMarkdown } from "../src/spec/render.js";
+import {
+  casesIn,
+  type ExpectedDiagnostic,
+  isInvalidOffPage,
+  manifest,
+  PARSE_CANNOT_RAISE,
+  readExpected,
+  readInput,
+  SPEC_VERSION,
+} from "./_corpus.js";
 
 /*
  * The Flashcard Markdown conformance corpus, run in both directions.
@@ -19,48 +24,9 @@ import { renderMarkdown } from "../src/spec/render.js";
  * byte for byte, must reject everything in the invalid tier, and must render a merely
  * valid file as canonical rather than as it was written.
  *
- * The corpus is a set of verbatim source slices rather than an AST or rendered HTML,
- * which is what lets a line scanner and an HTML emitter assert against one thing. The
- * adapter below is the whole of the mapping, and nothing in src/ knows the corpus
- * exists.
+ * The adapter below is the whole of the mapping from this package's model to the
+ * corpus shape.
  */
-
-const require = createRequire(import.meta.url);
-const FIXTURES = path.dirname(require.resolve("flashcard-md-spec/manifest.json"));
-
-/** The spec version this suite conforms to, pinned rather than tracked. */
-const SPEC_VERSION = "1.0";
-
-interface ManifestCase {
-  readonly id: string;
-  readonly tier: "canonical" | "valid" | "invalid";
-  readonly description: string;
-  readonly diagnostics: readonly DiagnosticCode[];
-}
-
-interface ExpectedDiagnostic {
-  readonly code: DiagnosticCode;
-  readonly cardIndex: number | null;
-}
-
-interface Expected {
-  readonly deck: unknown;
-  readonly cards: readonly unknown[];
-  readonly diagnostics: readonly ExpectedDiagnostic[];
-}
-
-const readJson = async <Shape>(file: string): Promise<Shape> =>
-  JSON.parse(await fs.readFile(file, "utf8")) as Shape;
-
-const readInput = (id: string): Promise<string> =>
-  fs.readFile(path.join(FIXTURES, id, "input.md"), "utf8");
-
-const readExpected = (id: string): Promise<Expected> =>
-  readJson<Expected>(path.join(FIXTURES, id, "expected.json"));
-
-const manifest = await readJson<{ specVersion: string; cases: ManifestCase[] }>(
-  path.join(FIXTURES, "manifest.json"),
-);
 
 const byCode = (left: ExpectedDiagnostic, right: ExpectedDiagnostic): number =>
   left.code.localeCompare(right.code) || (left.cardIndex ?? -1) - (right.cardIndex ?? -1);
@@ -83,22 +49,6 @@ const adapt = (deck: Deck) => ({
     titleSource: deck.titleSource,
   },
 });
-
-/*
- * `unresolved-image` is the one code in the corpus that nothing reading Markdown can
- * raise: whether an image resolves is a fact about the filesystem, not about the file.
- * Both directions hold it out rather than demand it from a function that cannot know
- * it. Whatever resolves an image is what raises it.
- */
-const PARSE_CANNOT_RAISE = new Set<DiagnosticCode>(["unresolved-image"]);
-
-/** True when a case is invalid only for a reason no reader of the source can see. */
-const isInvalidOffPage = (testCase: ManifestCase): boolean =>
-  testCase.diagnostics.length > 0 &&
-  testCase.diagnostics.every((code) => PARSE_CANNOT_RAISE.has(code));
-
-const casesIn = (tier: ManifestCase["tier"]): ManifestCase[] =>
-  manifest.cases.filter((item) => item.tier === tier);
 
 describe("the conformance corpus, read as a consumer", () => {
   it("pins the spec version rather than tracking whatever is installed", () => {

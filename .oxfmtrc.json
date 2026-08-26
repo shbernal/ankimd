@@ -1,5 +1,15 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "sortImports": true,
-  "ignorePatterns": ["dist/", "node_modules/", "coverage/", "pnpm-lock.yaml"]
+  "ignorePatterns": [
+    "dist/",
+    "node_modules/",
+    "coverage/",
+    "pnpm-lock.yaml",
+
+    // Test fixtures are input, not source. oxfmt formats Markdown too, and it
+    // rewrites a `***` separator to `---` and `*a*` to `_a_` - which is exactly
+    // the text the deck fixtures exist to hold still.
+    "packages/core/test/fixtures/"
+  ]
 }

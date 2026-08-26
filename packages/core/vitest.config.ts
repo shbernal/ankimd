@@ -8,10 +8,11 @@ export default defineConfig({
       reporter: ["text-summary", "lcov"],
       reportsDirectory: "coverage",
       /*
-       * A floor, not a target. The one branch short of 100% is the `String(error)` arm
-       * of the YAML failure path, which `yaml` cannot reach because it throws `Error`,
-       * and which `catch (error: unknown)` still obliges the code to handle. The floor
-       * binds `test:coverage` rather than `pnpm test`, so the gate CI runs stays fast.
+       * A floor, not a target. The one branch short of 100% is the `groups` arm of the
+       * media scan's `match.groups?.src`, which a pattern that always carries a named
+       * group cannot reach and which the type still obliges the code to handle. The
+       * floor binds `test:coverage` rather than `pnpm test`, so the gate CI runs stays
+       * fast.
        */
       thresholds: { branches: 99, functions: 100, lines: 100, statements: 100 },
     },

@@ -7,11 +7,14 @@ diff.
 ## What it does
 
 ```ts
-import { parseMarkdown, parseCanonical, renderMarkdown } from "@ankimd/core";
+import { localMedia, parseMarkdown, renderMarkdown, writeApkg } from "@ankimd/core";
 
 const { deck, diagnostics } = parseMarkdown(source);
-const back = deck.cards[0].back;
-const source2 = renderMarkdown(deck);
+const canonical = renderMarkdown(deck);
+
+const found = await writeApkg(deck, "botany.apkg", {
+  resolveMedia: localMedia("./notes"),
+});
 ```
 
 The format defines two conformance classes, and this package implements both.
@@ -30,9 +33,32 @@ The format defines two conformance classes, and this package implements both.
 Card bodies are verbatim source slices, so nested lists, code fences, tables and
 deeper headings all survive a round trip untouched.
 
+## Anki packages
+
+**`toApkg`** returns the package bytes and **`writeApkg`** writes them to a path.
+Both take a deck and options, never a file to read or a configuration to find.
+
+The heading and everything before the `***` become the note's front, what follows
+it becomes the back, and tags map to Anki's `::` nesting. Nothing is dropped in
+silence: a card Anki would refuse, two cards that render identically, a tag that
+had to be rewritten and an image that would not resolve each come back as a
+diagnostic while the rest of the deck converts.
+
+Four things the caller decides, because this package cannot:
+
+| option         | what it is for                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| `deckName`     | the Anki deck's name, when the file carries no title                                                  |
+| `resolveMedia` | how an image reference becomes bytes; `localMedia(dir)` reads a directory and refuses anything remote |
+| `highlight`    | colours fenced code, so no syntax highlighter is a dependency here                                    |
+| `template`     | the note type's question, answer and CSS                                                              |
+
+Pass `now` to pin every timestamp in the package, which makes the bytes
+reproducible across processes.
+
 ## Status
 
-Pre-release, and not published yet. Anki package conversion is not written.
+Pre-release, and not published yet.
 
 ## Install
 
@@ -44,8 +70,21 @@ pnpm add @ankimd/core
 
 The spec ships a conformance corpus, and this package runs all of it in both
 directions on every commit: every case parses to the expected model, every
-canonical case renders back byte for byte, and every invalid case is rejected by
-the producer while still loading for the consumer.
+canonical case renders back byte for byte, every invalid case is rejected by the
+producer while still loading for the consumer, and every canonical case converts
+to a package with nothing to report.
+
+`test/fixtures/deck.apkg` is a committed package this suite rebuilds and compares
+byte for byte. Real Anki is what says it is importable, through the oracle in
+`@shbernal/anki-apkg-export`:
+
+```sh
+uv run ../anki-apkg-export/tools/oracle/check_apkg.py \
+  packages/core/test/fixtures/deck.apkg
+```
+
+Run `pnpm run fixture:regen` to adopt an intended change to the emitted bytes,
+and read the diff before you do.
 
 ## License
 

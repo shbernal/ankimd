@@ -30,3 +30,14 @@ export const diagnostic = (
   message: string,
   cardIndex: number | null = null,
 ): Diagnostic => ({ cardIndex, code, message });
+
+/**
+ * What a thrown value has to say.
+ *
+ * `catch (error: unknown)` is what TypeScript gives, and every diagnostic built from a
+ * failure needs a sentence out of it. Written once so there is one arm to cover rather
+ * than one per call site, none of which any test can reach on its own: the throws these
+ * wrap are `Error`s, and the fallback is here for the callers that are not ours.
+ */
+export const reasonOf = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);

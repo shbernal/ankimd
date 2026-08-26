@@ -31,7 +31,7 @@ const BLOCK_GAP = "\n\n";
  * the sentence and stays exactly where it was. Hiding every recognized token instead
  * would render "The #verbs group of motion" as "The group of motion".
  */
-const extractTagLines = (slice: string): { body: string; tags: string[] } => {
+export const extractTagLines = (slice: string): { body: string; tags: string[] } => {
   const kept: string[] = [];
   const tags: string[] = [];
 

@@ -16,10 +16,10 @@ diff. `.apkg` reading and writing itself belongs to
 
 ## Status
 
-Pre-release, and neither package is published yet. Markdown reading and writing
-are done and the conformance corpus passes in both directions. Anki package
-conversion and the command line are not written. This section goes away with the
-first release.
+Pre-release, and neither package is published yet. `@ankimd/core` reads and
+writes Flashcard Markdown and converts a deck to an `.apkg`, with the conformance
+corpus passing in every direction. The command line is not written. This section
+goes away with the first release.
 
 ## Install
 

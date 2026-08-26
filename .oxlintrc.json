@@ -75,6 +75,11 @@
     // with no name of their own. Anything past this has earned a second look.
     "max-statements": ["error", 14],
 
+    // `AnkiExport` is a factory rather than a constructor: it awaits a WASM compile
+    // before it can hand back an exporter, which no `new` expression can do. The name
+    // is that package's published API and not ours to lowercase.
+    "new-cap": ["error", { "capIsNewExceptions": ["AnkiExport"] }],
+
     // 0, 1 and -1 are the empty/first/sentinel values that show up in any
     // scanner and carry no meaning a constant could add. Everything else gets
     // a name.

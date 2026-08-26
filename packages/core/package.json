@@ -35,13 +35,17 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "fixture:regen": "UPDATE_FIXTURE=1 vitest run test/apkg.test.ts"
   },
   "dependencies": {
     "@shbernal/anki-apkg-export": "^6.0.0",
+    "marked": "^18.0.11",
+    "marked-highlight": "^2.2.4",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
+    "fflate": "^0.8.3",
     "flashcard-md-spec": "^1.0.0"
   },
   "engines": {
