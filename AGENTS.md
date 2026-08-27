@@ -29,8 +29,8 @@ Flashcard Markdown decks to and from Anki packages.
 
 - Tooling
   - Node >= 24, ESM throughout, TypeScript 7.x, pnpm plus turbo.
-  - oxlint with `--type-aware` and oxfmt. Not ESLint or Prettier: the rest of
-    this family is mid-migration, and this repo starts on the far side of it.
+  - oxlint with `--type-aware` and oxfmt. Not ESLint or Prettier: nothing in
+    this family runs those any more.
   - `.oxlintrc.json` enables all five categories. Every exemption in it carries
     the reason it exists. Read those before adding another.
 
