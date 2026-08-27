@@ -4,7 +4,7 @@ import path from "node:path";
 import AnkiExport, { type MediaData, type TemplateOptions } from "@shbernal/anki-apkg-export";
 
 import type { Card, Deck } from "../deck.js";
-import { type Diagnostic, diagnostic, reasonOf } from "../diagnostics.js";
+import { atCard, type Diagnostic, diagnostic, reasonOf } from "../diagnostics.js";
 import { extractTagLines } from "../spec/render.js";
 import { toAnkiTags } from "../spec/tags.js";
 import { createHtmlRenderer, type Highlighter, type HtmlRenderer } from "./html.js";
@@ -132,7 +132,7 @@ const createCardWriter = (addNote: AddNote, html: HtmlRenderer, media: MediaColl
 
   const write = (card: Readonly<Card>, cardIndex: number, fields: Readonly<Fields>) => {
     const { diagnostics, tags } = toAnkiTags(card.tags);
-    const found = diagnostics.map(({ code, message }) => diagnostic(code, message, cardIndex));
+    const found = atCard(diagnostics, cardIndex);
     /* Both fields, so that duplicate fronts with different backs stay two cards, which
        is what §5.5 makes them and what Anki keeps them as. */
     const identity = JSON.stringify(fields);

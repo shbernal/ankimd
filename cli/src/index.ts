@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 
+import { reasonOf } from "@ankimd/core";
 import yargs from "yargs";
 
 import { build } from "./build.js";
@@ -155,7 +156,7 @@ export const main = async (
 
     return 0;
   } catch (error) {
-    reporter.warn(`ankimd: ${error instanceof Error ? error.message : String(error)}`);
+    reporter.warn(`ankimd: ${reasonOf(error)}`);
 
     return FAILED;
   }

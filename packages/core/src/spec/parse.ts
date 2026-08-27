@@ -1,4 +1,4 @@
-import type { Card, Deck, DeckImage } from "../deck.js";
+import { type Card, type Deck, deckOf, type DeckImage } from "../deck.js";
 import { type Diagnostic, diagnostic } from "../diagnostics.js";
 import { type CardRegion, splitDocument } from "./document.js";
 import { splitFrontmatter } from "./frontmatter.js";
@@ -104,14 +104,13 @@ export const parseMarkdown = (source: string): ParseResult => {
   }
 
   return {
-    deck: {
+    deck: deckOf({
       cards,
       fileTags: front.fileTags,
       frontmatter: front.data,
       preamble: document.preamble,
       title: document.title,
-      titleSource: document.title === null ? "none" : "heading",
-    },
+    }),
     diagnostics,
   };
 };

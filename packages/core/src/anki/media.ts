@@ -36,6 +36,14 @@ export type MediaResolver = (src: string) => Promise<ResolvedMedia>;
 const REMOTE = /^https?:\/\//iu;
 
 /**
+ * Whether a reference points off the filesystem.
+ *
+ * `http` and `https` only. A scheme this does not name is left to the resolver, which
+ * is the layer that knows whether it can fetch one.
+ */
+export const isRemote = (src: string): boolean => REMOTE.test(src);
+
+/**
  * Reads images from a directory, refusing remote ones.
  *
  * Downloading is deliberately not here: it needs a timeout, a policy on whether it is
@@ -45,7 +53,7 @@ const REMOTE = /^https?:\/\//iu;
 export const localMedia =
   (baseDirectory: string): MediaResolver =>
   async (src: string): Promise<ResolvedMedia> => {
-    if (REMOTE.test(src)) {
+    if (isRemote(src)) {
       throw new Error(
         `"${src}" is remote, and this resolver reads local files only. ` +
           `Download the image beside the deck, or pass a resolver that fetches.`,

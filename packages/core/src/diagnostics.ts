@@ -41,3 +41,13 @@ export const diagnostic = (
  */
 export const reasonOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
+
+/**
+ * The same diagnostics, told which card they belong to.
+ *
+ * The checks that produce them work over one card's values and have no index to give;
+ * their callers are iterating and do. Module-internal: a diagnostic that leaves this
+ * package already carries its index.
+ */
+export const atCard = (diagnostics: readonly Diagnostic[], cardIndex: number): Diagnostic[] =>
+  diagnostics.map(({ code, message }) => diagnostic(code, message, cardIndex));

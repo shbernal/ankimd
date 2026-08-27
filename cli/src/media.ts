@@ -1,6 +1,12 @@
 import path from "node:path";
 
-import { localMedia, type MediaResolver, type ResolvedMedia } from "@ankimd/core";
+import {
+  isRemote,
+  localMedia,
+  type MediaResolver,
+  reasonOf,
+  type ResolvedMedia,
+} from "@ankimd/core";
 
 /*
  * Media resolution over the network, which the library refuses on purpose.
@@ -9,8 +15,6 @@ import { localMedia, type MediaResolver, type ResolvedMedia } from "@ankimd/core
  * deciding that a conversion may open a socket. This program does decide, and
  * `--no-remote-media` is how a caller says otherwise.
  */
-
-const REMOTE = /^https?:\/\//iu;
 
 export const DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -38,11 +42,10 @@ const download = async (src: string, timeoutMs: number): Promise<ResolvedMedia> 
 
     return { data: new Uint8Array(await response.arrayBuffer()), extension: extensionOf(src) };
   } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error);
     const timedOut = error instanceof Error && error.name === "AbortError";
 
     throw new Error(
-      timedOut ? `timed out after ${timeoutMs}ms` : `could not download ${src}: ${reason}`,
+      timedOut ? `timed out after ${timeoutMs}ms` : `could not download ${src}: ${reasonOf(error)}`,
       { cause: error },
     );
   } finally {
@@ -74,7 +77,7 @@ export const createMediaResolver = ({
   const readers = directories.map((directory) => localMedia(directory));
 
   return async (src: string): Promise<ResolvedMedia> => {
-    if (REMOTE.test(src)) {
+    if (isRemote(src)) {
       if (!remote) {
         throw new Error(
           `remote media is off, so ${src} was not downloaded. ` +
@@ -92,7 +95,7 @@ export const createMediaResolver = ({
         // oxlint-disable-next-line no-await-in-loop -- the first hit wins, so this stops early.
         return await read(src);
       } catch (error) {
-        reasons.push(error instanceof Error ? error.message : String(error));
+        reasons.push(reasonOf(error));
       }
     }
 

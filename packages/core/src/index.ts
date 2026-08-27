@@ -21,14 +21,15 @@ export {
   writeApkg,
 } from "./anki/export.js";
 export { type Highlighter } from "./anki/html.js";
-export { localMedia, type MediaResolver, type ResolvedMedia } from "./anki/media.js";
+export { isRemote, localMedia, type MediaResolver, type ResolvedMedia } from "./anki/media.js";
 
-export type { Card, Deck, DeckImage } from "./deck.js";
+export { type Card, type Deck, deckOf, type DeckImage } from "./deck.js";
 export {
   DIAGNOSTIC_CODES,
   type Diagnostic,
   type DiagnosticCode,
   diagnostic,
+  reasonOf,
 } from "./diagnostics.js";
 export {
   type CanonicalIssue,

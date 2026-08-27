@@ -5,12 +5,13 @@ import {
   readApkg,
 } from "@shbernal/anki-apkg-export";
 
-import type { Card, Deck } from "../deck.js";
-import { type Diagnostic, diagnostic } from "../diagnostics.js";
+import { type Card, type Deck, deckOf } from "../deck.js";
+import { atCard, type Diagnostic, diagnostic } from "../diagnostics.js";
 import { parseMarkdown } from "../spec/parse.js";
 import { renderMarkdown } from "../spec/render.js";
 import { fromAnkiTags } from "../spec/tags.js";
 import { htmlToMarkdown, splitFront } from "./markdown.js";
+import { isRemote } from "./media.js";
 
 /*
  * An Anki package, back to a deck.
@@ -28,8 +29,6 @@ import { htmlToMarkdown, splitFront } from "./markdown.js";
 
 /** A basic note has exactly these: one field to ask with and one to answer with. */
 const BASIC_FIELD_COUNT = 2;
-
-const REMOTE = /^https?:\/\//iu;
 
 export interface ExtractOptions {
   /**
@@ -114,7 +113,7 @@ const cardFrom = (note: Readonly<AnkiNote>, cardIndex: number): Mapped | null =>
       images: [],
       tags,
     },
-    diagnostics: diagnostics.map(({ code, message }) => diagnostic(code, message, cardIndex)),
+    diagnostics: atCard(diagnostics, cardIndex),
   };
 };
 
@@ -188,7 +187,7 @@ const usedMedia = (
 
       if (data !== undefined) {
         media.set(src, data);
-      } else if (!REMOTE.test(src)) {
+      } else if (!isRemote(src)) {
         diagnostics.push(
           diagnostic(
             "unresolved-image",
@@ -218,15 +217,7 @@ export const extractDeck = (
   options: Readonly<ExtractOptions> = {},
 ): ExtractResult => {
   const mapped = mapNotes(pkg);
-  const title = options.title ?? null;
-  const draft: Deck = {
-    cards: mapped.cards,
-    fileTags: [],
-    frontmatter: {},
-    preamble: null,
-    title,
-    titleSource: title === null ? "none" : "heading",
-  };
+  const draft: Deck = deckOf({ cards: mapped.cards, title: options.title ?? null });
 
   const markdown = renderMarkdown(draft);
   const parsed = parseMarkdown(markdown);

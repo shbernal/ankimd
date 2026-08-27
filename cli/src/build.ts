@@ -1,7 +1,14 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { type Card, type Deck, type Diagnostic, parseMarkdown, writeApkg } from "@ankimd/core";
+import {
+  type Card,
+  type Deck,
+  deckOf,
+  type Diagnostic,
+  parseMarkdown,
+  writeApkg,
+} from "@ankimd/core";
 
 import { highlight, type CodeTheme } from "./highlight.js";
 import { createMediaResolver } from "./media.js";
@@ -80,14 +87,7 @@ export const build = async (
     throw new Error(`${options.source} holds no cards`);
   }
 
-  const deck: Deck = {
-    cards,
-    fileTags: [],
-    frontmatter: {},
-    preamble: null,
-    title,
-    titleSource: title === null ? "none" : "heading",
-  };
+  const deck: Deck = deckOf({ cards, title });
 
   const target = targetPath(source, options.target, ".apkg");
   const diagnostics: readonly Diagnostic[] = await writeApkg(deck, target, {

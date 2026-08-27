@@ -61,3 +61,33 @@ export interface Deck {
   readonly preamble: string | null;
   readonly cards: readonly Card[];
 }
+
+/** Everything a deck is made of except `titleSource`, which is derived from `title`. */
+type DeckFields = Pick<Deck, "cards" | "title"> &
+  Partial<Pick<Deck, "fileTags" | "frontmatter" | "preamble">>;
+
+/**
+ * A deck from its parts, with `titleSource` derived rather than passed.
+ *
+ * The invariant is that `titleSource` is `"heading"` exactly when there is a title, and
+ * the type cannot say so. Deriving it in one place is what keeps a deck assembled from
+ * an Anki package or from a folder of files agreeing with one parsed from Markdown.
+ *
+ * The optional fields default to what a deck built from something other than a single
+ * Markdown file has: no frontmatter, no file tags and no preamble, because the source
+ * it came from has nowhere to put them.
+ */
+export const deckOf = ({
+  cards,
+  fileTags = [],
+  frontmatter = {},
+  preamble = null,
+  title,
+}: Readonly<DeckFields>): Deck => ({
+  cards,
+  fileTags,
+  frontmatter,
+  preamble,
+  title,
+  titleSource: title === null ? "none" : "heading",
+});
