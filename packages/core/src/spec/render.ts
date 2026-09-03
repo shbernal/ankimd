@@ -122,7 +122,7 @@ export const renderMarkdown = (deck: Deck): string => {
     blocks.push(frontmatter);
   }
   if (deck.titleSource === "heading") {
-    blocks.push(`# ${deck.title ?? ""}`);
+    blocks.push(`# ${deck.title}`);
   }
   if (deck.preamble !== null) {
     blocks.push(deck.preamble);

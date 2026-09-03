@@ -51,9 +51,7 @@ export interface Card {
   readonly images: readonly DeckImage[];
 }
 
-export interface Deck {
-  readonly title: string | null;
-  readonly titleSource: "heading" | "none";
+interface DeckBody {
   /** The parsed frontmatter block, `{}` when there is none. */
   readonly frontmatter: Readonly<Record<string, unknown>>;
   readonly fileTags: readonly string[];
@@ -62,16 +60,32 @@ export interface Deck {
   readonly cards: readonly Card[];
 }
 
+/**
+ * The title and where it came from, as one value rather than two fields.
+ *
+ * §4.2 makes the `#` heading optional, and a deck therefore has a title or it does
+ * not. Two independent fields can also say it has a source and no text, which no
+ * parse produces and no renderer can write: a discriminated union is the same
+ * information with that fourth state removed.
+ */
+type DeckTitle =
+  | { readonly title: string; readonly titleSource: "heading" }
+  | { readonly title: null; readonly titleSource: "none" };
+
+export type Deck = DeckBody & DeckTitle;
+
 /** Everything a deck is made of except `titleSource`, which is derived from `title`. */
-type DeckFields = Pick<Deck, "cards" | "title"> &
-  Partial<Pick<Deck, "fileTags" | "frontmatter" | "preamble">>;
+type DeckFields = Pick<DeckBody, "cards"> &
+  Partial<Pick<DeckBody, "fileTags" | "frontmatter" | "preamble">> & {
+    readonly title: string | null;
+  };
 
 /**
  * A deck from its parts, with `titleSource` derived rather than passed.
  *
- * The invariant is that `titleSource` is `"heading"` exactly when there is a title, and
- * the type cannot say so. Deriving it in one place is what keeps a deck assembled from
- * an Anki package or from a folder of files agreeing with one parsed from Markdown.
+ * `DeckTitle` makes the pairing unrepresentable; this is what saves every caller from
+ * spelling it out. It keeps a deck assembled from an Anki package or from a folder of
+ * files agreeing with one parsed from Markdown.
  *
  * The optional fields default to what a deck built from something other than a single
  * Markdown file has: no frontmatter, no file tags and no preamble, because the source
@@ -88,6 +102,5 @@ export const deckOf = ({
   fileTags,
   frontmatter,
   preamble,
-  title,
-  titleSource: title === null ? "none" : "heading",
+  ...(title === null ? { title, titleSource: "none" } : { title, titleSource: "heading" }),
 });

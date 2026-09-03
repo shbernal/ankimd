@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { deckOf } from "../src/deck.js";
 import { parseMarkdown } from "../src/spec/parse.js";
 import { renderMarkdown } from "../src/spec/render.js";
 
@@ -72,19 +73,14 @@ describe("the canonical serializer", () => {
     );
   });
 
-  it("writes an empty title for a hand-built deck that claims one and has none", () => {
+  /* The deck that claims a heading and carries no title has no spelling any more:
+     `Deck` pairs the two, so `renderMarkdown` has no fourth state to hedge against.
+     What is left to check is that the factory pairs them the way the type says. */
+  it("writes the title a hand-built deck was given, and none when it has null", () => {
     expect.hasAssertions();
 
-    expect(
-      renderMarkdown({
-        cards: [],
-        fileTags: [],
-        frontmatter: {},
-        preamble: null,
-        title: null,
-        titleSource: "heading",
-      }),
-    ).toBe("# \n");
+    expect(renderMarkdown(deckOf({ cards: [], title: "Deck" }))).toBe("# Deck\n");
+    expect(renderMarkdown(deckOf({ cards: [], title: null }))).toBe("");
   });
 
   it("keeps a card with no body on one line", () => {
