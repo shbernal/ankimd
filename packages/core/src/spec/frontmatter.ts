@@ -1,6 +1,7 @@
 import { parse as parseYaml } from "yaml";
 
 import { type Diagnostic, diagnostic, reasonOf } from "../diagnostics.js";
+import { asTagToken } from "./tags.js";
 
 /*
  * Flashcard Markdown §4.1. The block is optional, must be first in the file, and
@@ -54,6 +55,78 @@ const notASequence = (): Diagnostic =>
       'Obsidian stopped accepting a scalar in 1.9; write one tag per line under "tags:".',
   );
 
+const notAScalar = (): Diagnostic =>
+  diagnostic(
+    "frontmatter-tags-not-a-sequence",
+    'an entry under "tags" is not a single tag, so it was left out. §6.4 makes the ' +
+      "value a flat sequence of tags.",
+  );
+
+const noSpelling = (written: string): Diagnostic =>
+  diagnostic(
+    "unrepresentable-content",
+    `the frontmatter tag "${written}" has no spelling in this format and was left ` +
+      `out of the deck. Tags are letters, digits, "_", "-" and "/", with at least ` +
+      `one character that is not a digit.`,
+  );
+
+const sanitized = (written: string, tag: string): Diagnostic =>
+  diagnostic(
+    "tag-sanitized",
+    `the frontmatter tag "${written}" holds characters §6.2 has no room for; ` +
+      `it was read as "${tag}".`,
+  );
+
+/** What YAML's scalars are once parsed. A null entry is answered before this. */
+const isScalar = (value: unknown): value is boolean | number | string =>
+  typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+
+/** One entry of the sequence: the tag it names, or `null`, and what that cost. */
+interface TagEntry {
+  readonly tag: string | null;
+  readonly diagnostics: readonly Diagnostic[];
+}
+
+/**
+ * One entry of the `tags` sequence, held to §6.2.
+ *
+ * §3.3 is why nothing here returns quietly except a null entry, which is how YAML
+ * spells a list item with nothing on it: there is no tag there to lose.
+ *
+ * The grammar is applied here rather than left to the export path. `toAnkiTags` would
+ * catch the whitespace in one of these, but only on the way to a package, which leaves
+ * every other consumer holding a tag the format's own grammar rejects.
+ */
+const readTagEntry = (entry: unknown): TagEntry => {
+  if (entry === null || entry === undefined) {
+    return { diagnostics: [], tag: null };
+  }
+
+  if (!isScalar(entry)) {
+    return { diagnostics: [notAScalar()], tag: null };
+  }
+
+  const written = stripLeadingHash(String(entry));
+  const tag = asTagToken(written);
+
+  if (tag === null) {
+    return { diagnostics: [noSpelling(written)], tag: null };
+  }
+
+  return { diagnostics: tag === written ? [] : [sanitized(written, tag)], tag };
+};
+
+const readTagEntries = (
+  entries: readonly unknown[],
+): { fileTags: string[]; diagnostics: Diagnostic[] } => {
+  const read = entries.map((entry) => readTagEntry(entry));
+
+  return {
+    diagnostics: read.flatMap(({ diagnostics }: Readonly<TagEntry>) => diagnostics),
+    fileTags: read.map(({ tag }: Readonly<TagEntry>) => tag).filter((tag) => tag !== null),
+  };
+};
+
 const readFileTags = (
   data: Readonly<Record<string, unknown>>,
 ): { fileTags: string[]; diagnostics: Diagnostic[] } => {
@@ -74,12 +147,9 @@ const readFileTags = (
     return { diagnostics, fileTags: [] };
   }
 
-  const fileTags = (value as unknown[])
-    .filter((tag): tag is string | number => typeof tag !== "object")
-    .map((tag) => stripLeadingHash(String(tag)))
-    .filter((tag) => tag !== "");
+  const read = readTagEntries(value as unknown[]);
 
-  return { diagnostics, fileTags };
+  return { diagnostics: [...diagnostics, ...read.diagnostics], fileTags: read.fileTags };
 };
 
 type YamlBlock = { readonly parsed: unknown } | { readonly reason: string };

@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import type { Deck } from "../src/deck.js";
+import { type Deck, deckOf } from "../src/deck.js";
 import { localMedia, toApkg, writeApkg } from "../src/index.js";
 import { parseMarkdown } from "../src/spec/parse.js";
 import { FIXTURE_DIR, FIXTURE_NOW, readFixtureDeck } from "./_fixture-deck.js";
@@ -233,12 +233,32 @@ describe("images", () => {
 });
 
 describe("what a package cannot hold", () => {
-  /* §6.5: Anki separates tags with spaces, so a file tag carrying one would silently
-     become two. The sanitize is reported rather than done quietly. */
+  /*
+   * §6.5: Anki separates tags with spaces, so a tag carrying one would silently
+   * become two. The sanitize is reported rather than done quietly.
+   *
+   * The deck is built rather than parsed, because a parsed one can no longer carry
+   * such a tag: §6.2 has no room for the space either, and the reader now says so
+   * where it reads it. What reaches here is a deck assembled from something that is
+   * not Markdown, which is the only source left that can hand this over.
+   */
   it("reports a tag it had to rewrite to fit Anki's grammar", async () => {
     expect.hasAssertions();
 
-    const deck = deckFrom('---\ntags: ["needs review"]\n---\n\n# Deck\n\n## Card\n\n- Body\n');
+    const deck = deckOf({
+      cards: [
+        {
+          back: "- Body",
+          cardTags: ["needs review"],
+          frontBody: "",
+          hasSeparator: false,
+          headingText: "Card",
+          images: [],
+          tags: ["needs review"],
+        },
+      ],
+      title: "Deck",
+    });
     const { data, diagnostics } = await toApkg(deck, { now: FIXTURE_NOW });
 
     expect(diagnostics).toStrictEqual([

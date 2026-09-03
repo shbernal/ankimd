@@ -87,6 +87,20 @@ export const toAnkiTags = (
 const NOT_A_TAG_CHARACTER = /[^\p{L}\p{N}_\-/]+/gu;
 
 /**
+ * A tag rewritten to fit §6.2's grammar, or `null` when nothing of it survives.
+ *
+ * Both places a tag enters the deck from outside the format need this: Anki's tags
+ * hold punctuation and emoji, and a frontmatter sequence holds whatever YAML parsed.
+ * A tag equal to its input needed no rewriting, which is what tells a caller whether
+ * it owes a `tag-sanitized`.
+ */
+export const asTagToken = (raw: string): string | null => {
+  const sanitized = raw.replaceAll(NOT_A_TAG_CHARACTER, "_");
+
+  return isTagToken(sanitized) ? sanitized : null;
+};
+
+/**
  * The other half of §6.5's mapping, from Anki's tags back to the file's.
  *
  * Anki nests with `::` where the file nests with `/`, and it is far more permissive
@@ -102,9 +116,18 @@ export const fromAnkiTags = (
 
   for (const tag of tags) {
     const nested = tag.replaceAll("::", "/");
-    const sanitized = nested.replaceAll(NOT_A_TAG_CHARACTER, "_");
+    const sanitized = asTagToken(nested);
 
-    if (isTagToken(sanitized)) {
+    if (sanitized === null) {
+      diagnostics.push(
+        diagnostic(
+          "unrepresentable-content",
+          `the Anki tag "${tag}" has no spelling in this format and was left out of ` +
+            `the deck. Tags are letters, digits, "_", "-" and "/", with at least one ` +
+            `character that is not a digit.`,
+        ),
+      );
+    } else {
       if (sanitized !== nested) {
         diagnostics.push(
           diagnostic(
@@ -116,15 +139,6 @@ export const fromAnkiTags = (
       }
 
       kept.push(sanitized);
-    } else {
-      diagnostics.push(
-        diagnostic(
-          "unrepresentable-content",
-          `the Anki tag "${tag}" has no spelling in this format and was left out of ` +
-            `the deck. Tags are letters, digits, "_", "-" and "/", with at least one ` +
-            `character that is not a digit.`,
-        ),
-      );
     }
   }
 

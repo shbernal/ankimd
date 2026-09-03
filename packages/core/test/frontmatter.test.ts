@@ -63,6 +63,40 @@ describe("the frontmatter block", () => {
     expect(deck.fileTags).toStrictEqual([]);
   });
 
+  it("names an entry that is a sequence of its own rather than one tag", () => {
+    expect.hasAssertions();
+
+    const { deck, diagnostics } = parseMarkdown("---\ntags:\n  - [a, b]\n  - c\n---\n\n## Card\n");
+
+    expect(diagnostics.map(({ code }) => code)).toStrictEqual(["frontmatter-tags-not-a-sequence"]);
+    expect(deck.fileTags).toStrictEqual(["c"]);
+  });
+
+  /* The gap this closes: the deck model used to hold a tag §6.2's own grammar rejects,
+     and only the export path noticed, so every other consumer got it in silence. */
+  it("holds a frontmatter tag to the tag grammar where it reads it", () => {
+    expect.hasAssertions();
+
+    const { deck, diagnostics } = parseMarkdown(
+      '---\ntags: ["needs review", "42"]\n---\n\n## Card\n',
+    );
+
+    expect(diagnostics.map(({ code }) => code)).toStrictEqual([
+      "tag-sanitized",
+      "unrepresentable-content",
+    ]);
+    expect(deck.fileTags).toStrictEqual(["needs_review"]);
+  });
+
+  it("passes over an empty list item, which names no tag to lose", () => {
+    expect.hasAssertions();
+
+    const { deck, diagnostics } = parseMarkdown("---\ntags:\n  - a\n  -\n---\n\n## Card\n");
+
+    expect(diagnostics).toStrictEqual([]);
+    expect(deck.fileTags).toStrictEqual(["a"]);
+  });
+
   it("counts source lines from the top of the file, frontmatter included", () => {
     expect.hasAssertions();
 
