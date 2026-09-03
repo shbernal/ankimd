@@ -60,6 +60,18 @@ import "prismjs/components/prism-zig.js";
  * carries, so the card is coloured with no script in it at all.
  */
 
+/**
+ * A key's own value, or `undefined`.
+ *
+ * The key here is a fence's info string, which is whatever the deck's author typed.
+ * A plain `record[key]` reaches `Object.prototype`, so a fence tagged `constructor`
+ * finds a function in both tables below. Neither read is exploitable today, since
+ * Prism hands such code back escaped, but a lookup driven by text out of a deck has
+ * no business seeing a prototype at all.
+ */
+const own = <Value>(record: Readonly<Record<string, Value>>, key: string): Value | undefined =>
+  Object.hasOwn(record, key) ? record[key] : undefined;
+
 /** Short names people write on a fence that Prism knows under another. */
 const ALIASES: Readonly<Record<string, string>> = {
   "c#": "csharp",
@@ -91,9 +103,9 @@ const THEME_FILE: Readonly<Record<CodeTheme, string>> = {
  * A fence with no info string, or one naming a language Prism was not loaded with,
  * is left as it is. Guessing would colour a shell transcript as JavaScript.
  */
-export const highlight: Highlighter = (code: string, language?: string): string => {
-  const name = ALIASES[language ?? ""] ?? language ?? "";
-  const grammar = Prism.languages[name];
+export const highlight: Highlighter = (code: string, language = ""): string => {
+  const name = own(ALIASES, language) ?? language;
+  const grammar = own(Prism.languages, name);
 
   if (grammar === undefined) {
     return code;
