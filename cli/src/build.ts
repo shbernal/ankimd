@@ -102,5 +102,5 @@ export const build = async (
   });
 
   report(reporter, path.basename(target), diagnostics);
-  reporter.warn(`ankimd: wrote ${cards.length} card(s) to ${target}`);
+  reporter.line(`ankimd: wrote ${cards.length} card(s) to ${target}`);
 };

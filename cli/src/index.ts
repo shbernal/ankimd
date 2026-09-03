@@ -156,7 +156,7 @@ export const main = async (
 
     return 0;
   } catch (error) {
-    reporter.warn(`ankimd: ${reasonOf(error)}`);
+    reporter.line(`ankimd: ${reasonOf(error)}`);
 
     return FAILED;
   }

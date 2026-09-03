@@ -1,5 +1,7 @@
 import TurndownService from "turndown";
 
+import { isBlank } from "../spec/scan.js";
+
 /*
  * The HTML an Anki field holds, back to Markdown.
  *
@@ -118,7 +120,14 @@ const LEADING_HEADING = /^\s*<h2\b[^>]*>([\s\S]*?)<\/h2>/iu;
 /** Markers that open a line but are not part of the text on it. */
 const LINE_MARKERS = /^(?:[-*+]\s+|\d+\.\s+|>\s*|#{1,6}\s+)+/u;
 
-/** A closing sequence, which §5.2 strips from a heading, so it cannot be written. */
+/*
+ * A closing sequence, which §5.2 strips from a heading, so it cannot be written.
+ *
+ * `\s`, where `spec/scan.ts` uses `[ \t]` for the same job. Deliberate: that one reads
+ * raw source lines, this one reads text that was HTML a moment ago, and an Anki field
+ * full of `&nbsp;` puts a non-breaking space in front of the `##` that no source file
+ * would carry.
+ */
 const CLOSING_SEQUENCE = /\s+#+$/u;
 
 /**
@@ -131,7 +140,7 @@ const CLOSING_SEQUENCE = /\s+#+$/u;
  * 1351 notes and the last gives 1343.
  */
 export const headingTextOf = (markdown: string): string =>
-  (markdown.split("\n").findLast((line) => line.trim() !== "") ?? "")
+  (markdown.split("\n").findLast((line) => !isBlank(line)) ?? "")
     .trim()
     .replace(LINE_MARKERS, "")
     .replace(CLOSING_SEQUENCE, "")
@@ -161,7 +170,7 @@ export const splitFront = (html: string): SplitFront => {
     /* A front that is one line *is* the heading, and repeating it as a body
        would give every such card an empty front region and a `***` with nothing
        on either side of it. */
-    if (body.split("\n").filter((line) => line.trim() !== "").length === 1) {
+    if (body.split("\n").filter((line) => !isBlank(line)).length === 1) {
       return { body: "", heading: headingTextOf(body) };
     }
 

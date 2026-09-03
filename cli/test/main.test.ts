@@ -55,8 +55,8 @@ describe("the ankimd binary", () => {
     directory = await mkdtemp(path.join(os.tmpdir(), "ankimd-cli-"));
     lines = [];
     reporter = {
-      warn: (line: string) => {
-        lines.push(line);
+      line: (text: string) => {
+        lines.push(text);
       },
     };
     await writeFile(at("notes.md"), DECK);

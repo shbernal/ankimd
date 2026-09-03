@@ -127,7 +127,7 @@ export const extract = async (
   await writeFile(target, relative === "" ? markdown : relocate(markdown, written.names, relative));
 
   report(reporter, path.basename(source), [...diagnostics, ...written.diagnostics]);
-  reporter.warn(
+  reporter.line(
     `ankimd: wrote ${deck.cards.length} card(s) and ${written.names.length} media file(s) to ${target}`,
   );
 };

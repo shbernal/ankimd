@@ -158,10 +158,12 @@ const createCardWriter = (addNote: AddNote, html: HtmlRenderer, media: MediaColl
     write(card, cardIndex, await render(card, cardIndex));
 };
 
+/* Parameters in the order they go on the wire: `ApkgOptions.media` promises the
+   caller's own files are added before any image, so that their indices do not move. */
 const addFiles = (
   addFile: AddFile,
-  files: ReadonlyMap<string, Uint8Array>,
   extra: readonly PackagedFile[],
+  files: ReadonlyMap<string, Uint8Array>,
 ): void => {
   for (const { filename, data } of extra) {
     addFile(filename, data);
@@ -205,8 +207,8 @@ export const toApkg = async (
       (filename, data) => {
         exporter.addMedia(filename, data);
       },
-      media.files,
       options.media ?? [],
+      media.files,
     );
 
     return { data: await exporter.save(), diagnostics: [...found, ...media.diagnostics] };

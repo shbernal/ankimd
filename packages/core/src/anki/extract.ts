@@ -182,7 +182,7 @@ const usedMedia = (
   const diagnostics: Diagnostic[] = [];
   const media = new Map<string, Uint8Array>();
 
-  deck.cards.forEach((card: Readonly<Card>, cardIndex: number) => {
+  for (const [cardIndex, card] of deck.cards.entries()) {
     for (const { src } of card.images) {
       const data = available.get(src);
 
@@ -199,7 +199,7 @@ const usedMedia = (
         );
       }
     }
-  });
+  }
 
   return { diagnostics, media };
 };

@@ -162,7 +162,7 @@ describe("the console reporter", () => {
 
     const write = vi.spyOn(process.stderr, "write").mockReturnValue(true);
 
-    consoleReporter.warn("something");
+    consoleReporter.line("something");
 
     expect(write).toHaveBeenCalledTimes(1);
     write.mockRestore();

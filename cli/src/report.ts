@@ -9,13 +9,14 @@ import type { Diagnostic } from "@ankimd/core";
  * -` would still pipe clean Markdown if it ever grows that.
  */
 
+/** One line out. Every one goes to stderr, results and losses alike, for the reason above. */
 export interface Reporter {
-  readonly warn: (line: string) => void;
+  readonly line: (text: string) => void;
 }
 
 export const consoleReporter: Reporter = {
-  warn: (line: string) => {
-    process.stderr.write(`${line}\n`);
+  line: (text: string) => {
+    process.stderr.write(`${text}\n`);
   },
 };
 
@@ -29,6 +30,6 @@ export const report = (
   diagnostics: readonly Diagnostic[],
 ): void => {
   for (const found of diagnostics) {
-    reporter.warn(format(where, found));
+    reporter.line(format(where, found));
   }
 };
