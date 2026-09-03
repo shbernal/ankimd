@@ -16,6 +16,15 @@
  * and every construct here is anchored at column zero or close to it, so nothing
  * inside one can be mistaken for a heading or a separator.
  *
+ * That anchoring is a deliberate narrowing of CommonMark, which lets an ATX heading
+ * and a thematic break carry up to three spaces of indentation. `  ## Card` is an H2
+ * to a CommonMark parser and body content here, and `  ***` is a thematic break there
+ * and body content here. The narrowing is the safe half of the two: an indented `##`
+ * leaves a card whole, where honouring it would cut one in two, and §5.3 already
+ * requires the separator to be at the top level of the body. `FENCE` is the one
+ * pattern that takes CommonMark's `^ {0,3}`, for the same reason read the other way:
+ * it decides what is code, and recognizing more code splits fewer cards.
+ *
  * Capture groups are destructured with empty defaults throughout. None of the patterns
  * below has an optional group that can go missing once the pattern has matched, but
  * `noUncheckedIndexedAccess` types every group as possibly absent and there is no way
