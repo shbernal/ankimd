@@ -42,7 +42,11 @@ const download = async (src: string, timeoutMs: number): Promise<ResolvedMedia> 
 
     return { data: new Uint8Array(await response.arrayBuffer()), extension: extensionOf(src) };
   } catch (error) {
-    const timedOut = error instanceof Error && error.name === "AbortError";
+    /* The controller, not the error: Node's `fetch` has at points reported an abort
+       as a `TypeError: fetch failed` carrying the `DOMException` as its cause, and a
+       name read off the outer error calls that a download failure. The signal cannot
+       be fooled, because nothing else aborts this request. */
+    const timedOut = controller.signal.aborted;
 
     throw new Error(
       timedOut ? `timed out after ${timeoutMs}ms` : `could not download ${src}: ${reasonOf(error)}`,
