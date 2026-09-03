@@ -1,7 +1,7 @@
 import { type Card, type Deck, deckOf, type DeckImage } from "../deck.js";
 import { type Diagnostic, diagnostic } from "../diagnostics.js";
-import { type CardRegion, splitDocument } from "./document.js";
-import { splitFrontmatter } from "./frontmatter.js";
+import { type CardRegion, type Document, splitDocument } from "./document.js";
+import { type FrontmatterResult, splitFrontmatter } from "./frontmatter.js";
 import { type ScannedLine, scanLines, splitSourceLines, toSlice } from "./scan.js";
 import { isTagsOnlyLine, tagsInLine, uniqueTags } from "./tags.js";
 
@@ -78,10 +78,24 @@ export interface ParseResult {
   readonly diagnostics: readonly Diagnostic[];
 }
 
-export const parseMarkdown = (source: string): ParseResult => {
-  const front = splitFrontmatter(splitSourceLines(source));
-  const document = splitDocument(scanLines(front.body, front.bodyStartLine));
+/**
+ * One walk of the source: frontmatter split, line scan, document regions.
+ *
+ * Not exported from the package. It exists so `canonical.ts` can check a source and
+ * parse it off the same walk, rather than running this three times for one deck.
+ */
+export interface Walk {
+  readonly document: Document;
+  readonly front: FrontmatterResult;
+}
 
+export const walkSource = (source: string): Walk => {
+  const front = splitFrontmatter(splitSourceLines(source));
+
+  return { document: splitDocument(scanLines(front.body, front.bodyStartLine)), front };
+};
+
+export const parseWalk = ({ document, front }: Walk): ParseResult => {
   const cards: Card[] = [];
   const diagnostics: Diagnostic[] = [...front.diagnostics, ...document.diagnostics];
 
@@ -114,3 +128,5 @@ export const parseMarkdown = (source: string): ParseResult => {
     diagnostics,
   };
 };
+
+export const parseMarkdown = (source: string): ParseResult => parseWalk(walkSource(source));

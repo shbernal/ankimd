@@ -1,8 +1,7 @@
 import type { Deck } from "../deck.js";
-import { type CardRegion, splitDocument } from "./document.js";
-import { splitFrontmatter } from "./frontmatter.js";
-import { parseMarkdown } from "./parse.js";
-import { isBlank, type ScannedLine, scanLines, splitSourceLines, trimBlankEnds } from "./scan.js";
+import type { CardRegion } from "./document.js";
+import { parseWalk, type Walk, walkSource } from "./parse.js";
+import { isBlank, type ScannedLine, trimBlankEnds } from "./scan.js";
 import { isTagsOnlyLine } from "./tags.js";
 
 /*
@@ -162,22 +161,28 @@ const checkCard = (region: CardRegion): CanonicalIssue[] => {
   return [...checkHeadingGap(region), ...checkSeparatorGaps(body), ...checkTagPlacement(body)];
 };
 
+const reviewWalk = (walk: Walk): { deck: Deck; issues: CanonicalIssue[] } => {
+  const { deck, diagnostics } = parseWalk(walk);
+
+  /* The regions, not `deck.cards`: a card with an empty heading is dropped from the
+     deck but is still a departure, and `checkCard` has to see it. */
+  return {
+    deck,
+    issues: [
+      ...diagnostics.map((item) => ({ lines: [], message: `${item.code}: ${item.message}` })),
+      ...walk.document.regions.flatMap((region) => checkCard(region)),
+    ],
+  };
+};
+
 /**
  * Every way `source` departs from canonical form. Empty means it is canonical.
  *
  * This does not throw, so a caller that wants to report rather than fail can.
  * `parseCanonical` is the failing entry point.
  */
-export const checkCanonical = (source: string): CanonicalIssue[] => {
-  const { diagnostics } = parseMarkdown(source);
-  const front = splitFrontmatter(splitSourceLines(source));
-  const { regions } = splitDocument(scanLines(front.body, front.bodyStartLine));
-
-  return [
-    ...diagnostics.map((item) => ({ lines: [], message: `${item.code}: ${item.message}` })),
-    ...regions.flatMap((region) => checkCard(region)),
-  ];
-};
+export const checkCanonical = (source: string): CanonicalIssue[] =>
+  reviewWalk(walkSource(source)).issues;
 
 /**
  * Parses `source` and refuses anything that is not canonical.
@@ -188,11 +193,11 @@ export const checkCanonical = (source: string): CanonicalIssue[] => {
  * broken deck".
  */
 export const parseCanonical = (source: string): Deck => {
-  const issues = checkCanonical(source);
+  const { deck, issues } = reviewWalk(walkSource(source));
 
   if (issues.length > 0) {
     throw new NotCanonicalError(issues);
   }
 
-  return parseMarkdown(source).deck;
+  return deck;
 };
