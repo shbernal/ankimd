@@ -3,6 +3,52 @@
 Notable changes per release. Every package in this workspace is versioned and
 released together.
 
+## 0.0.5
+
+Fixes in both conversion paths, and four new exports from `@ankimd/core`, three
+of which were private copies of the same idiom in two or three places.
+
+### Fixes
+
+`ankimd extract` wrote every media file the package named, and a name is
+whatever the package says it is: one reading `../../.bashrc` left the media
+directory. A name that does not stay inside it is refused and reported now, and
+the reference stays in the card as an unresolved one already does.
+
+Images are relocated by reference rather than by text. §7 leaves the link
+destination unrestricted, so `](name)` is one spelling of several: the writer
+missed `](name "title")` and `](<name>)`, both of which the extractor can emit,
+and it rewrote a literal `](name)` sitting in prose or inside a fence. The
+reader had the same gap in the other direction, so an image written in angle
+brackets was never packaged at all. `relocateImages` is the writer, exported for
+a caller that unpacks media somewhere other than beside the Markdown.
+
+A frontmatter tag is held to §6.2's grammar where it is read rather than only on
+the way to a package. One that needs a rewrite is reported (`tag-sanitized`),
+one the rewrite leaves nothing of is left out and reported, and a `tags` entry
+that is a sequence or a mapping of its own stops disappearing in silence.
+
+An inline `data:` image no longer reports `unresolved-image` about a file that
+was never missing. A source directory whose name holds glob metacharacters is a
+folder and not a pattern. A symlink to a directory is followed rather than
+refused as a non-Markdown file. The relative media path written into the
+Markdown uses `/` on every platform, which the suite now asserts by running on
+Windows rather than by reading. A download timeout is told from a failure by the
+controller's own signal rather than by the error's name, which Node's fetch has
+at points wrapped in a `TypeError`. A fence's info string is looked up with
+`Object.hasOwn`, so a language named `constructor` finds no function on
+`Object.prototype`.
+
+### API
+
+A `Deck`'s `title` and `titleSource` are one discriminated union rather than two
+independent fields, so `{ title: null, titleSource: "heading" }`, a deck
+claiming a `# ` line with no text for it, has no spelling. **`deckOf({ cards,
+title })`** derives the pairing and is how a deck assembled by hand is built.
+
+`@ankimd/core` also exports `reasonOf` and `isRemote`, both of which the CLI was
+carrying its own copy of.
+
 ## 0.0.4
 
 `@ankimd/core` exports its line scan: `scanLines`, `splitSourceLines`, `isBlank`

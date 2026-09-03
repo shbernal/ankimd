@@ -1,6 +1,6 @@
 {
   "name": "ankimd",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "The ankimd command. An alias for @ankimd/cli, which is where the code lives.",
   "keywords": [
     "anki",
