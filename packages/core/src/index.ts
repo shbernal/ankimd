@@ -38,6 +38,7 @@ export {
   NotCanonicalError,
   parseCanonical,
 } from "./spec/canonical.js";
+export { relocateImages } from "./spec/images.js";
 export { type ParseResult, parseMarkdown } from "./spec/parse.js";
 /*
  * The line scan, exported because a producer checking policy over its own output needs

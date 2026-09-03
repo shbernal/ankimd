@@ -1,7 +1,7 @@
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { type Diagnostic, diagnostic, readDeck } from "@ankimd/core";
+import { type Diagnostic, diagnostic, readDeck, relocateImages } from "@ankimd/core";
 
 import { report, type Reporter } from "./report.js";
 import { callerCwd, targetPath } from "./sources.js";
@@ -24,17 +24,6 @@ export interface ExtractOptions {
 }
 
 const APKG = ".apkg";
-
-/** Point the deck's image references at wherever its files were actually written. */
-const relocate = (markdown: string, names: Iterable<string>, directory: string): string => {
-  let out = markdown;
-
-  for (const name of names) {
-    out = out.replaceAll(`](${name})`, `](${directory}/${name})`);
-  }
-
-  return out;
-};
 
 /**
  * Whether a media name from the package stays inside the directory being written to.
@@ -123,8 +112,13 @@ export const extract = async (
   const written = await writeMedia(mediaDir, media);
 
   /* With the files beside the Markdown, the names the deck already carries resolve
-     as written and nothing needs rewriting. */
-  await writeFile(target, relative === "" ? markdown : relocate(markdown, written.names, relative));
+     as written and nothing needs rewriting. Only what was written is moved: a name
+     refused above keeps the reference it came with, which is what its diagnostic says. */
+  const moves = new Map(
+    relative === "" ? [] : written.names.map((name) => [name, `${relative}/${name}`] as const),
+  );
+
+  await writeFile(target, relocateImages(markdown, moves));
 
   report(reporter, path.basename(source), [...diagnostics, ...written.diagnostics]);
   reporter.line(

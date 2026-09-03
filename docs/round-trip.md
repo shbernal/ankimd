@@ -17,23 +17,23 @@ fourteen come back byte for byte.
 Anki stores a note as a list of field values plus tags. Everything a deck file
 carries that is not one of those has nowhere to go.
 
-| What                                 | What happens                                                                                                                                                            |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Frontmatter                          | Dropped, except `tags`                                                                                                                                                  |
-| File-level tags                      | Kept, on every card. §6.1 makes them apply to each card anyway, so nothing is lost                                                                                      |
-| Preamble                             | Dropped. It belongs to no card (§4.3), and Anki has no per-deck text                                                                                                    |
-| Deck title                           | Becomes the Anki deck's name                                                                                                                                            |
-| Card heading                         | Rendered into the first field, as an `<h2>`                                                                                                                             |
-| Front region                         | Rendered into the first field, after the heading                                                                                                                        |
-| `***`                                | Not stored. Its position is implied by the `<h2>`, so an empty front region loses the separator                                                                         |
-| Back                                 | Rendered into the second field                                                                                                                                          |
-| Card tags                            | Kept, with `/` mapped to `::` (§6.5)                                                                                                                                    |
-| A tag holding whitespace             | Rewritten with underscores, and reported (`tag-sanitized`)                                                                                                              |
-| A frontmatter tag §6.2 forbids       | Rewritten to fit the grammar where it is read, and reported (`tag-sanitized`); one that cannot become a tag at all is left out and reported (`unrepresentable-content`) |
-| A `tags` entry that is not a scalar  | Left out, and reported (`frontmatter-tags-not-a-sequence`). An empty list item names no tag and is passed over                                                          |
-| Images                               | The reference is kept; the file is packaged when a resolver is given                                                                                                    |
-| Two cards with identical fields      | One note, and the second is reported (`unrepresentable-content`). Anki identifies a note by its content                                                                 |
-| A card whose front strips to nothing | Not written, and reported (`malformed-card-skipped`). Anki drops such a note on import                                                                                  |
+| What                                 | What happens                                                                                                                                                                       |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontmatter                          | Dropped, except `tags`                                                                                                                                                             |
+| File-level tags                      | Kept, on every card. §6.1 makes them apply to each card anyway, so nothing is lost                                                                                                 |
+| Preamble                             | Dropped. It belongs to no card (§4.3), and Anki has no per-deck text                                                                                                               |
+| Deck title                           | Becomes the Anki deck's name                                                                                                                                                       |
+| Card heading                         | Rendered into the first field, as an `<h2>`                                                                                                                                        |
+| Front region                         | Rendered into the first field, after the heading                                                                                                                                   |
+| `***`                                | Not stored. Its position is implied by the `<h2>`, so an empty front region loses the separator                                                                                    |
+| Back                                 | Rendered into the second field                                                                                                                                                     |
+| Card tags                            | Kept, with `/` mapped to `::` (§6.5)                                                                                                                                               |
+| A tag holding whitespace             | Rewritten with underscores, and reported (`tag-sanitized`)                                                                                                                         |
+| A frontmatter tag §6.2 forbids       | Rewritten to fit the grammar where it is read, and reported (`tag-sanitized`); one that cannot become a tag at all is left out and reported (`unrepresentable-content`)            |
+| A `tags` entry that is not a scalar  | Left out, and reported (`frontmatter-tags-not-a-sequence`). An empty list item names no tag and is passed over                                                                     |
+| Images                               | The reference is kept; the file is packaged when a resolver is given. Every CommonMark spelling of the destination counts: bare, angle-bracketed, and either of those with a title |
+| Two cards with identical fields      | One note, and the second is reported (`unrepresentable-content`). Anki identifies a note by its content                                                                            |
+| A card whose front strips to nothing | Not written, and reported (`malformed-card-skipped`). Anki drops such a note on import                                                                                             |
 
 Soft line breaks inside a paragraph are not stored, because HTML has no
 character for them: `a\nb` inside one paragraph renders to `a b`. This is

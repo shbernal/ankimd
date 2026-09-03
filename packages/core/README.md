@@ -82,6 +82,13 @@ the table in [docs/round-trip.md](../../docs/round-trip.md).
 The one promise it makes is a fixpoint: Markdown to package to Markdown may
 change the file, and doing it again changes nothing.
 
+A caller that unpacks the media somewhere other than beside the Markdown points
+the deck at it with **`relocateImages(markdown, moves)`**, where `moves` maps the
+name a card carries to the path it should carry instead. It rewrites references
+rather than text: a `](name)` in prose is left alone, one inside a fence is code,
+and a destination in angle brackets or carrying a title is still that
+destination.
+
 **It does not read scheduling.** A deck extracted to Markdown and written back is
 a new deck, with no review history at all. Edit a deck you are studying in Anki.
 

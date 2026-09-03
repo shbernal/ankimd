@@ -1,7 +1,8 @@
-import { type Card, type Deck, deckOf, type DeckImage } from "../deck.js";
+import { type Card, type Deck, deckOf } from "../deck.js";
 import { type Diagnostic, diagnostic } from "../diagnostics.js";
 import { type CardRegion, type Document, splitDocument } from "./document.js";
 import { type FrontmatterResult, splitFrontmatter } from "./frontmatter.js";
+import { imagesIn } from "./images.js";
 import { type ScannedLine, scanLines, splitSourceLines, toSlice } from "./scan.js";
 import { isTagsOnlyLine, tagsInLine, uniqueTags } from "./tags.js";
 
@@ -11,16 +12,6 @@ import { isTagsOnlyLine, tagsInLine, uniqueTags } from "./tags.js";
  * nothing here throws. Everything that departs from the grammar becomes a diagnostic
  * and the rest of the file still loads.
  */
-
-/** Alt text is SHOULD, not MUST (§7), so the alt group matches empty. */
-const IMAGE = /!\[([^\]]*)\]\(\s*([^)\s]+)(?:\s+"[^"]*")?\s*\)/gu;
-
-const imagesIn = (lines: readonly ScannedLine[]): DeckImage[] =>
-  lines
-    .filter((line) => !line.inCode)
-    .flatMap((line) =>
-      [...line.text.matchAll(IMAGE)].map(([, alt = "", src = ""]) => ({ alt, src })),
-    );
 
 const tagsIn = (lines: readonly ScannedLine[]): string[] =>
   uniqueTags(lines.filter((line) => !line.inCode).flatMap((line) => tagsInLine(line.text)));
