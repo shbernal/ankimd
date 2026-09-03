@@ -16,13 +16,21 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify workspace (Node ${{ matrix.node-version }})
-    runs-on: ubuntu-latest
+    name: Verify workspace (${{ matrix.os }}, Node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         node-version: [24, 26]
+        # One Windows job, because the CLI has platform-specific lines that were
+        # otherwise asserted by reading: the `path.sep` normalization in extract.ts,
+        # the "\\" to "/" turn in sources.ts, and what a drive letter does to a media
+        # name. One is enough; the rest of the matrix is about Node, not about the OS.
+        include:
+          - os: windows-latest
+            node-version: 24
 
     steps:
       - name: Check out repository
