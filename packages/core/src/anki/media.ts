@@ -43,6 +43,21 @@ const REMOTE = /^https?:\/\//iu;
  */
 export const isRemote = (src: string): boolean => REMOTE.test(src);
 
+/*
+ * Two characters before the colon, not one, so a Windows path keeps its drive letter
+ * and is read as the filename it is.
+ */
+const SCHEME = /^[a-z][a-z0-9+.-]+:/iu;
+
+/**
+ * Whether a reference names a file that should travel with the deck.
+ *
+ * Anything carrying a scheme does not: a `data:` URI is the image itself, and a remote
+ * one is fetched. Only a bare reference is a file someone has to ship, so only a bare
+ * reference can go missing.
+ */
+export const namesFile = (src: string): boolean => !SCHEME.test(src);
+
 /**
  * Reads images from a directory, refusing remote ones.
  *

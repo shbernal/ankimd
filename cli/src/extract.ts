@@ -1,7 +1,7 @@
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { readDeck } from "@ankimd/core";
+import { type Diagnostic, diagnostic, readDeck } from "@ankimd/core";
 
 import { report, type Reporter } from "./report.js";
 import { callerCwd, targetPath } from "./sources.js";
@@ -34,6 +34,54 @@ const relocate = (markdown: string, names: Iterable<string>, directory: string):
   }
 
   return out;
+};
+
+/**
+ * Whether a media name from the package stays inside the directory being written to.
+ *
+ * The name is whatever the `.apkg` says it is, and nothing between there and here
+ * checks it, so `../../.bashrc` is a name a crafted package can carry. Extracting a
+ * deck someone sent you is what this command is for, so it is refused here rather
+ * than trusted. §3.1 forbids failing the whole extraction over one file: the name
+ * becomes a diagnostic and the reference stays in the card as written, which is what
+ * an image the package never carried already does.
+ */
+const staysInside = (directory: string, name: string): boolean => {
+  const relative = path.relative(directory, path.resolve(directory, name));
+
+  return relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative);
+};
+
+/**
+ * Writes the media into `directory`, and names the entries it would not write.
+ *
+ * The names come back so the Markdown can be pointed at the files that exist, and
+ * the refused ones stay in the card exactly as an image the package never carried
+ * already does.
+ */
+const writeMedia = async (
+  directory: string,
+  media: ReadonlyMap<string, Uint8Array>,
+): Promise<{ diagnostics: Diagnostic[]; names: string[] }> => {
+  const names = [...media.keys()].filter((name) => staysInside(directory, name));
+
+  await mkdir(directory, { recursive: true });
+  await Promise.all(
+    names.map((name) => writeFile(path.join(directory, name), media.get(name) ?? new Uint8Array())),
+  );
+
+  return {
+    diagnostics: [...media.keys()]
+      .filter((name) => !staysInside(directory, name))
+      .map((name) =>
+        diagnostic(
+          "unrepresentable-content",
+          `the media file "${name}" is named outside the media directory and was not ` +
+            `written. Its reference stays in the card as written.`,
+        ),
+      ),
+    names,
+  };
 };
 
 const exists = async (at: string): Promise<boolean> => {
@@ -69,21 +117,17 @@ export const extract = async (
   });
 
   const mediaDir = path.resolve(callerCwd(), options.mediaDir ?? path.dirname(target));
-  const relative = path.relative(path.dirname(target), mediaDir);
+  /* Markdown link paths are "/" whatever the platform separator is. */
+  const relative = path.relative(path.dirname(target), mediaDir).replaceAll(path.sep, "/");
 
-  await mkdir(mediaDir, { recursive: true });
-  await Promise.all(
-    [...media].map(([name, data]: readonly [string, Uint8Array]) =>
-      writeFile(path.join(mediaDir, name), data),
-    ),
-  );
+  const written = await writeMedia(mediaDir, media);
 
   /* With the files beside the Markdown, the names the deck already carries resolve
      as written and nothing needs rewriting. */
-  await writeFile(target, relative === "" ? markdown : relocate(markdown, media.keys(), relative));
+  await writeFile(target, relative === "" ? markdown : relocate(markdown, written.names, relative));
 
-  report(reporter, path.basename(source), diagnostics);
+  report(reporter, path.basename(source), [...diagnostics, ...written.diagnostics]);
   reporter.warn(
-    `ankimd: wrote ${deck.cards.length} card(s) and ${media.size} media file(s) to ${target}`,
+    `ankimd: wrote ${deck.cards.length} card(s) and ${written.names.length} media file(s) to ${target}`,
   );
 };

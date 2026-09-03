@@ -54,6 +54,9 @@ importers:
         specifier: ^18.1.0
         version: 18.1.0
     devDependencies:
+      '@shbernal/anki-apkg-export':
+        specifier: ^6.1.0
+        version: 6.1.0
       '@types/prismjs':
         specifier: ^1.26.6
         version: 1.26.6

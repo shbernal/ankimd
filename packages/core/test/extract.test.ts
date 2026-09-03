@@ -277,6 +277,17 @@ describe("media", () => {
     expect(diagnostics).toStrictEqual([]);
     expect(deck.cards[0]?.images).toStrictEqual([{ alt: "", src: "https://example.org/a.png" }]);
   });
+
+  /* A `data:` URI is the image, not a name for one, so nothing is missing. */
+  it("says nothing about an inline data URI", () => {
+    expect.hasAssertions();
+
+    const src = "data:image/png;base64,iVBORw0KGgo=";
+    const { deck, diagnostics } = extractDeck(packageOf([note(["Q", `<img src="${src}">`])]));
+
+    expect(diagnostics).toStrictEqual([]);
+    expect(deck.cards[0]?.images).toStrictEqual([{ alt: "", src }]);
+  });
 });
 
 describe("the deck a package becomes", () => {

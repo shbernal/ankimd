@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
+import AnkiExport from "@shbernal/anki-apkg-export";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { main } from "../src/index.js";
@@ -246,6 +247,33 @@ describe("the ankimd binary", () => {
       await expect(run("extract", at("deck.apkg"), "-o", at("back.md"), "--force")).resolves.toBe(
         0,
       );
+    });
+
+    /*
+     * A media name is whatever the package says it is, and nothing between the
+     * archive and the filesystem checks it, so a deck someone sent you can name a
+     * file anywhere on the disk. Extracting one is what this command is for.
+     */
+    it("refuses a media name that climbs out of the media directory", async () => {
+      expect.hasAssertions();
+
+      const exporter = await AnkiExport("Hostile");
+
+      try {
+        exporter.addMedia("../escaped.txt", new Uint8Array([1, 2, 3]));
+        exporter.addCard("Question", '<img src="../escaped.txt">');
+        await writeFile(at("hostile.apkg"), await exporter.save());
+      } finally {
+        exporter.close();
+      }
+
+      const code = await run("extract", at("hostile.apkg"), "-o", at("out", "back.md"));
+
+      expect(code).toBe(0);
+      await expect(readFile(at("escaped.txt"), "utf8")).rejects.toThrow(/ENOENT/u);
+      expect(lines.join("\n")).toContain("unrepresentable-content");
+      /* §3.1: one refused file does not fail the extraction. */
+      await expect(readFile(at("out", "back.md"), "utf8")).resolves.toContain("## Question");
     });
 
     it("titles the deck after the file, or after what it is told", async () => {

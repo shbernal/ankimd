@@ -1,4 +1,4 @@
-import { lstat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import path from "node:path";
 
 import fastGlob from "fast-glob";
@@ -26,7 +26,9 @@ const isMarkdown = (file: string): boolean =>
 
 /** Every Markdown file a source path names, sorted, so a deck is built the same way twice. */
 export const markdownFiles = async (source: string): Promise<string[]> => {
-  const stats = await lstat(source).catch(() => {
+  /* `stat`, not `lstat`: a vault reached through a symlink is an ordinary directory.
+     A broken link still lands in the catch, which is the right answer for one. */
+  const stats = await stat(source).catch(() => {
     throw new Error(`${source} does not exist`);
   });
 
@@ -39,7 +41,11 @@ export const markdownFiles = async (source: string): Promise<string[]> => {
   }
 
   const extensions = MARKDOWN_EXTENSIONS.map((extension) => extension.slice(1)).join(",");
-  const found = await fastGlob(`${source.replaceAll("\\", "/")}/**/*.{${extensions}}`, {
+  /* The directory is a path, not a pattern. `escapePath` keeps a folder called
+     `notes{a,b}` from being read as one; it leaves separators alone, so the Windows
+     ones still have to be turned round by hand. */
+  const base = fastGlob.escapePath(source.replaceAll("\\", "/"));
+  const found = await fastGlob(`${base}/**/*.{${extensions}}`, {
     dot: false,
   });
 

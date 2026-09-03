@@ -62,6 +62,8 @@ editing a deck they are studying should edit it in Anki.
 | Media not referenced by an extracted note                      | Not returned                                                                                                                       |
 | A local image reference with no file in the package            | The reference is kept and reported (`unresolved-image`)                                                                            |
 | A remote image reference                                       | Kept, and not reported. Most images in a real collection are remote URLs with no media entry                                       |
+| An inline `data:` image                                        | Kept, and not reported. The image is the reference, so there is no file to be missing                                              |
+| A media file named outside the media directory                 | `ankimd extract` does not write it, and reports it (`unrepresentable-content`). A name is whatever the package says it is          |
 
 ### What happens to a field's HTML
 

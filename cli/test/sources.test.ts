@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -43,6 +43,37 @@ describe("what a source path names", () => {
     const found = await markdownFiles(directory);
 
     expect(found.map((file) => path.basename(file))).toStrictEqual(["a.md", "b.md", "c.md"]);
+  });
+
+  /* `notes{a,b}` is a folder name, not a brace expansion, and fast-glob reads the
+     two the same way unless the path is escaped. */
+  it("walks a directory whose name looks like a glob pattern", async () => {
+    expect.hasAssertions();
+    await mkdir(at("notes{a,b}"));
+    await writeFile(at("notes{a,b}", "a.md"), "");
+
+    const found = await markdownFiles(at("notes{a,b}"));
+
+    expect(found.map((file) => path.basename(file))).toStrictEqual(["a.md"]);
+  });
+
+  /* A vault reached through a symlink is an ordinary directory. */
+  it("follows a symlink to a directory", async () => {
+    expect.hasAssertions();
+    await mkdir(at("real"));
+    await writeFile(at("real", "a.md"), "");
+    await symlink(at("real"), at("link"), "dir");
+
+    const found = await markdownFiles(at("link"));
+
+    expect(found.map((file) => path.basename(file))).toStrictEqual(["a.md"]);
+  });
+
+  it("says a broken symlink does not exist", async () => {
+    expect.hasAssertions();
+    await symlink(at("nowhere"), at("dangling"), "dir");
+
+    await expect(markdownFiles(at("dangling"))).rejects.toThrow(/does not exist/u);
   });
 
   it("says so when a directory holds no Markdown at all", async () => {

@@ -11,7 +11,7 @@ import { parseMarkdown } from "../spec/parse.js";
 import { renderMarkdown } from "../spec/render.js";
 import { fromAnkiTags } from "../spec/tags.js";
 import { htmlToMarkdown, splitFront } from "./markdown.js";
-import { isRemote } from "./media.js";
+import { namesFile } from "./media.js";
 
 /*
  * An Anki package, back to a deck.
@@ -170,9 +170,10 @@ const mapNotes = (pkg: Readonly<AnkiPackage>): Mapping => {
  * The media the deck actually refers to, and a word about the images it names
  * that the package does not carry.
  *
- * A reference the package has no file for is ordinary rather than broken: most
- * images in a real collection are remote URLs, which need no media entry at all.
- * One that looks like a filename and is not there is a genuine loss, and says so.
+ * A reference the package has no file for is ordinary rather than broken: a remote
+ * URL and a `data:` URI both need a media entry as much as they need a filename,
+ * which is not at all. One that names a file and is not there is a genuine loss,
+ * and says so.
  */
 const usedMedia = (
   deck: Readonly<Deck>,
@@ -187,7 +188,7 @@ const usedMedia = (
 
       if (data !== undefined) {
         media.set(src, data);
-      } else if (!isRemote(src)) {
+      } else if (namesFile(src)) {
         diagnostics.push(
           diagnostic(
             "unresolved-image",
