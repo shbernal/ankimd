@@ -17,7 +17,7 @@ const require = createRequire(import.meta.url);
 export const FIXTURES = path.dirname(require.resolve("flashcard-md-spec/manifest.json"));
 
 /** The spec version these suites conform to, pinned rather than tracked. */
-export const SPEC_VERSION = "1.0";
+export const SPEC_VERSION = "1.1";
 
 export interface ManifestCase {
   readonly id: string;
