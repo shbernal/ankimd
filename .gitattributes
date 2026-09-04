@@ -1,0 +1,8 @@
+# Windows checks out with core.autocrlf on by default and oxfmt wants LF, so a
+# CRLF working tree fails format:check on all 69 files at once rather than on a
+# real difference. That is what the one Windows job hit. LF everywhere, so the
+# job reports the platform-specific lines it exists for and nothing else.
+* text=auto eol=lf
+
+*.apkg binary
+*.png binary
