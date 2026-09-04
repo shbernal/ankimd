@@ -11,6 +11,10 @@ import { callerCwd, markdownFiles, mediaDirectories, targetPath } from "../src/s
  * do with one: it takes a `Deck` and never goes looking.
  */
 
+/* Built rather than written out: "/somewhere/french.apkg" is a POSIX literal, and on
+   Windows the same input resolves onto the current drive as D:\somewhere. */
+const under = (...parts: readonly string[]): string => path.resolve("/somewhere", ...parts);
+
 describe("what a source path names", () => {
   let directory: string;
 
@@ -99,8 +103,8 @@ describe("where the output goes", () => {
     expect.hasAssertions();
     process.env.ANKIMD_CALLER_CWD = "/somewhere";
 
-    expect(targetPath("/notes/french.md", undefined, ".apkg")).toBe("/somewhere/french.apkg");
-    expect(targetPath("/notes/french.md", "", ".apkg")).toBe("/somewhere/french.apkg");
+    expect(targetPath("/notes/french.md", undefined, ".apkg")).toBe(under("french.apkg"));
+    expect(targetPath("/notes/french.md", "", ".apkg")).toBe(under("french.apkg"));
   });
 
   it("resolves what it is given against the directory the caller is standing in", () => {
@@ -108,7 +112,7 @@ describe("where the output goes", () => {
     process.env.ANKIMD_CALLER_CWD = "/somewhere";
 
     expect(targetPath("/notes/french.md", "out/deck.apkg", ".apkg")).toBe(
-      "/somewhere/out/deck.apkg",
+      under("out", "deck.apkg"),
     );
   });
 
