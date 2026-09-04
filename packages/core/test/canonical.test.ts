@@ -106,11 +106,20 @@ describe("the failing entry point", () => {
     expect((thrown as NotCanonicalError).issues).toHaveLength(1);
   });
 
-  it("reports an issue with no line when the defect is not tied to one", () => {
+  it("names the line of a tier-3 signal, which carries one of its own", () => {
     expect.hasAssertions();
 
     expect(() => parseCanonical("# One\n\n## Card\n\n- a\n\n# Two\n")).toThrow(/stray-h1/u);
-    expect(() => parseCanonical("# One\n\n## Card\n\n- a\n\n# Two\n")).not.toThrow(/lines/u);
+    expect(() => parseCanonical("# One\n\n## Card\n\n- a\n\n# Two\n")).toThrow(/lines 7/u);
+  });
+
+  it("reports an issue with no line when the defect is not tied to one", () => {
+    expect.hasAssertions();
+
+    const scalarTags = "---\ntags: astronomy, orbits\n---\n\n## Card\n\n- a\n";
+
+    expect(() => parseCanonical(scalarTags)).toThrow(/frontmatter-tags-not-a-sequence/u);
+    expect(() => parseCanonical(scalarTags)).not.toThrow(/lines/u);
   });
 
   it("names separate lines separately rather than collapsing them into a range", () => {

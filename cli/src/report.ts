@@ -20,9 +20,21 @@ export const consoleReporter: Reporter = {
   },
 };
 
-/** One diagnostic, prefixed with the file it came from and the card it belongs to. */
-const format = (where: string, { cardIndex, code, message }: Readonly<Diagnostic>): string =>
-  `ankimd: ${where}${cardIndex === null ? "" : ` (card ${cardIndex + 1})`}: ${code}: ${message}`;
+/**
+ * Where in the file to look. The line is the better answer when there is one, and a
+ * diagnostic raised at the package boundary has a card and no line.
+ */
+const at = ({ cardIndex, line }: Readonly<Diagnostic>): string => {
+  if (line !== undefined) {
+    return ` (line ${line})`;
+  }
+
+  return cardIndex === null ? "" : ` (card ${cardIndex + 1})`;
+};
+
+/** One diagnostic, prefixed with the file it came from and where in it to look. */
+const format = (where: string, found: Readonly<Diagnostic>): string =>
+  `ankimd: ${where}${at(found)}: ${found.code}: ${found.message}`;
 
 export const report = (
   reporter: Readonly<Reporter>,

@@ -75,7 +75,8 @@ What survives each direction, and what does not, is in
 
 Both commands write to stderr whatever a conversion had to give up: a note type
 with no Markdown spelling, an image that would not resolve, a tag that had to be
-rewritten. The format requires it. A quiet success on a deck that lost half its
+rewritten. The format requires it. Each one names where to look: the line, when
+the file is where it went wrong, and the card otherwise. A quiet success on a deck that lost half its
 notes would be the bug, not the tidy interface.
 
 ## Requirements

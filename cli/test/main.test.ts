@@ -108,6 +108,15 @@ describe("the ankimd binary", () => {
       expect(lines.some((line) => line.includes("stray-h1"))).toBe(true);
     });
 
+    it("says where in the file to look when the diagnostic knows", async () => {
+      expect.hasAssertions();
+
+      await writeFile(at("stray.md"), "# One\n\n## Card\n\n- body\n\n# Two\n");
+      await run("build", at("stray.md"), "-o", at("deck.apkg"));
+
+      expect(lines.some((line) => line.includes("(line 7): stray-h1"))).toBe(true);
+    });
+
     it("refuses a file with no cards in it", async () => {
       expect.hasAssertions();
 

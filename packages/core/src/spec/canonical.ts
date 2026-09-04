@@ -169,7 +169,10 @@ const reviewWalk = (walk: Walk): { deck: Deck; issues: CanonicalIssue[] } => {
   return {
     deck,
     issues: [
-      ...diagnostics.map((item) => ({ lines: [], message: `${item.code}: ${item.message}` })),
+      ...diagnostics.map((item) => ({
+        lines: item.line === undefined ? [] : [item.line],
+        message: `${item.code}: ${item.message}`,
+      })),
       ...walk.document.regions.flatMap((region) => checkCard(region)),
     ],
   };

@@ -21,6 +21,13 @@ export interface Diagnostic {
   readonly code: DiagnosticCode;
   /** The card it belongs to, or null when the diagnostic is file-level. */
   readonly cardIndex: number | null;
+  /**
+   * 1-based source line, counted from the first line of the file, frontmatter included.
+   * Absent where there is no such line: §8 names the field and requires nothing, and a
+   * diagnostic raised at a conversion boundary is about a value rather than a place in
+   * a file.
+   */
+  readonly line?: number;
   /** Free-form and ours to word; no test anywhere may depend on it. */
   readonly message: string;
 }
@@ -30,6 +37,14 @@ export const diagnostic = (
   message: string,
   cardIndex: number | null = null,
 ): Diagnostic => ({ cardIndex, code, message });
+
+/**
+ * The same diagnostic, told which line it came from.
+ *
+ * Its constructor names the departure and the caller is the one holding the scanned
+ * line, which is the same split `atCard` exists for.
+ */
+export const atLine = (found: Diagnostic, line: number): Diagnostic => ({ ...found, line });
 
 /**
  * What a thrown value has to say.
@@ -50,4 +65,4 @@ export const reasonOf = (error: unknown): string =>
  * package already carries its index.
  */
 export const atCard = (diagnostics: readonly Diagnostic[], cardIndex: number): Diagnostic[] =>
-  diagnostics.map(({ code, message }) => diagnostic(code, message, cardIndex));
+  diagnostics.map((found) => ({ ...found, cardIndex }));

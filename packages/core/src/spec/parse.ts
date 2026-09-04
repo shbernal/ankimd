@@ -1,5 +1,5 @@
 import { type Card, type Deck, deckOf } from "../deck.js";
-import { type Diagnostic, diagnostic } from "../diagnostics.js";
+import { atLine, type Diagnostic, diagnostic } from "../diagnostics.js";
 import { type CardRegion, type Document, splitDocument } from "./document.js";
 import { type FrontmatterResult, splitFrontmatter } from "./frontmatter.js";
 import { imagesIn } from "./images.js";
@@ -38,18 +38,24 @@ const splitAtSeparator = (
   };
 };
 
-const emptyHeading = (): Diagnostic =>
-  diagnostic(
-    "malformed-card-skipped",
-    "a card has an empty ## heading, which is its only identity, so it was skipped.",
+const emptyHeading = (line: number): Diagnostic =>
+  atLine(
+    diagnostic(
+      "malformed-card-skipped",
+      "a card has an empty ## heading, which is its only identity, so it was skipped.",
+    ),
+    line,
   );
 
-const preambleTag = (): Diagnostic =>
-  diagnostic(
-    "preamble-tag",
-    "a tag appears above the first card, where version 1 of the format gives it no " +
-      "meaning: it is neither a file tag nor a card tag. Move it into the frontmatter " +
-      'under "tags" or into a card.',
+const preambleTag = (line: number): Diagnostic =>
+  atLine(
+    diagnostic(
+      "preamble-tag",
+      "a tag appears above the first card, where version 1 of the format gives it no " +
+        "meaning: it is neither a file tag nor a card tag. Move it into the frontmatter " +
+        'under "tags" or into a card.',
+    ),
+    line,
   );
 
 const toCard = (region: CardRegion, fileTags: readonly string[]): Card => {
@@ -95,7 +101,7 @@ export const parseWalk = ({ document, front }: Walk): ParseResult => {
        cannot be kept. The file still loads and every other card survives, which is
        what §3.1 obliges a consumer to do. */
     if (region.headingText === "") {
-      diagnostics.push(emptyHeading());
+      diagnostics.push(emptyHeading(region.heading.number));
     } else {
       cards.push(toCard(region, front.fileTags));
     }
@@ -104,8 +110,10 @@ export const parseWalk = ({ document, front }: Walk): ParseResult => {
   /* A bare tag above the first card is neither a file tag nor a card tag in version 1.
      Dropping the preamble is conformant (§4.3); dropping a tag the user clearly meant
      as one, without a word, is what this names. */
-  if (document.preambleLines.some((line) => !line.inCode && isTagsOnlyLine(line.text))) {
-    diagnostics.push(preambleTag());
+  const strayTag = document.preambleLines.find((line) => !line.inCode && isTagsOnlyLine(line.text));
+
+  if (strayTag !== undefined) {
+    diagnostics.push(preambleTag(strayTag.number));
   }
 
   return {

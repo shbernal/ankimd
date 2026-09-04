@@ -1,4 +1,4 @@
-import { type Diagnostic, diagnostic } from "../diagnostics.js";
+import { atLine, type Diagnostic, diagnostic } from "../diagnostics.js";
 import { CARD_DEPTH, type ScannedLine, TITLE_DEPTH, toSlice } from "./scan.js";
 
 /*
@@ -47,11 +47,14 @@ interface Walk {
   readonly diagnostics: Diagnostic[];
 }
 
-const strayH1 = (text: string): Diagnostic =>
-  diagnostic(
-    "stray-h1",
-    `a second "# ${text}" heading has no meaning in version 1 of the format; it ends ` +
-      "the card above it and the content below it belongs to no card.",
+const strayH1 = (text: string, line: number): Diagnostic =>
+  atLine(
+    diagnostic(
+      "stray-h1",
+      `a second "# ${text}" heading has no meaning in version 1 of the format; it ends ` +
+        "the card above it and the content below it belongs to no card.",
+    ),
+    line,
   );
 
 const closeRegion = (walk: Walk): void => {
@@ -62,13 +65,13 @@ const closeRegion = (walk: Walk): void => {
 };
 
 /** Version 1 gives the first `#` one meaning and every later one none (§4.2, §5.1). */
-const takeTitle = (walk: Walk, text: string): void => {
+const takeTitle = (walk: Walk, text: string, line: number): void => {
   if (walk.title === null && walk.regions.length === 0 && walk.region === "preamble") {
     walk.title = text;
     return;
   }
 
-  walk.diagnostics.push(strayH1(text));
+  walk.diagnostics.push(strayH1(text, line));
   walk.region = "orphan";
 };
 
@@ -78,7 +81,7 @@ const step = (walk: Walk, line: ScannedLine): void => {
 
   if (depth === TITLE_DEPTH) {
     closeRegion(walk);
-    takeTitle(walk, text);
+    takeTitle(walk, text, line.number);
   } else if (depth === CARD_DEPTH) {
     closeRegion(walk);
     walk.open = { body: [], heading: line, headingText: text };
