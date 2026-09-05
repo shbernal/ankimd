@@ -17,11 +17,24 @@ const CLOSING = /^(?:---|\.\.\.)[ \t]*$/u;
 /** The opening delimiter, the closing one, and then the body. */
 const LINES_BEFORE_BODY = 2;
 
+/** The opening delimiter is line 1, so the block's own first line is line 2. */
+const BLOCK_FIRST_LINE = 2;
+
+/** A tag written with a leading `#`: valid under §6.4, and not the canonical spelling. */
+export interface HashedTag {
+  /** As the file spells it, `#verbs`. */
+  readonly written: string;
+  /** 1-based source line, `undefined` when the entry cannot be traced back to one. */
+  readonly line: number | undefined;
+}
+
 export interface FrontmatterResult {
   /** The parsed block, `{}` when there is none. */
   readonly data: Record<string, unknown>;
   /** Tags from `tags`, with a leading `#` stripped. */
   readonly fileTags: string[];
+  /** The entries that carried that `#`, for the producer gate. Empty on a canonical file. */
+  readonly hashedTags: readonly HashedTag[];
   readonly diagnostics: readonly Diagnostic[];
   /** The lines below the block; the whole file when there is no block. */
   readonly body: readonly string[];
@@ -85,6 +98,8 @@ const isScalar = (value: unknown): value is boolean | number | string =>
 interface TagEntry {
   readonly tag: string | null;
   readonly diagnostics: readonly Diagnostic[];
+  /** The entry as written, when it was written with a leading `#`. */
+  readonly hashed: string | null;
 }
 
 /**
@@ -99,37 +114,54 @@ interface TagEntry {
  */
 const readTagEntry = (entry: unknown): TagEntry => {
   if (entry === null || entry === undefined) {
-    return { diagnostics: [], tag: null };
+    return { diagnostics: [], hashed: null, tag: null };
   }
 
   if (!isScalar(entry)) {
-    return { diagnostics: [notAScalar()], tag: null };
+    return { diagnostics: [notAScalar()], hashed: null, tag: null };
   }
 
-  const written = stripLeadingHash(String(entry));
+  const spelled = String(entry);
+  const written = stripLeadingHash(spelled);
+  const hashed = spelled === written ? null : spelled;
   const tag = asTagToken(written);
 
   if (tag === null) {
-    return { diagnostics: [noSpelling(written)], tag: null };
+    return { diagnostics: [noSpelling(written)], hashed, tag: null };
   }
 
-  return { diagnostics: tag === written ? [] : [sanitized(written, tag)], tag };
+  return { diagnostics: tag === written ? [] : [sanitized(written, tag)], hashed, tag };
 };
 
 const readTagEntries = (
   entries: readonly unknown[],
-): { fileTags: string[]; diagnostics: Diagnostic[] } => {
+): { fileTags: string[]; diagnostics: Diagnostic[]; hashed: string[] } => {
   const read = entries.map((entry) => readTagEntry(entry));
 
   return {
     diagnostics: read.flatMap(({ diagnostics }: Readonly<TagEntry>) => diagnostics),
     fileTags: read.map(({ tag }: Readonly<TagEntry>) => tag).filter((tag) => tag !== null),
+    hashed: read.map(({ hashed }: Readonly<TagEntry>) => hashed).filter((entry) => entry !== null),
   };
+};
+
+/*
+ * Where the block spells a tag, so the producer gate can point a line at it.
+ *
+ * Matched by text because the parse holds only the value: a bare entry, a quoted one
+ * and a flow sequence all carry the written form somewhere on their own line. An entry
+ * no line claims is still reported, without one.
+ */
+const lineOfTag = (blockLines: readonly string[], written: string): number | undefined => {
+  const at = blockLines.findIndex((line) => line.includes(written));
+
+  return at === -1 ? undefined : at + BLOCK_FIRST_LINE;
 };
 
 const readFileTags = (
   data: Readonly<Record<string, unknown>>,
-): { fileTags: string[]; diagnostics: Diagnostic[] } => {
+  blockLines: readonly string[],
+): { fileTags: string[]; diagnostics: Diagnostic[]; hashedTags: HashedTag[] } => {
   const diagnostics: Diagnostic[] = [];
 
   if (data.tag !== undefined && data.tag !== null) {
@@ -139,17 +171,24 @@ const readFileTags = (
   const value = data.tags;
 
   if (value === undefined || value === null) {
-    return { diagnostics, fileTags: [] };
+    return { diagnostics, fileTags: [], hashedTags: [] };
   }
 
   if (!Array.isArray(value)) {
     diagnostics.push(notASequence());
-    return { diagnostics, fileTags: [] };
+    return { diagnostics, fileTags: [], hashedTags: [] };
   }
 
   const read = readTagEntries(value as unknown[]);
 
-  return { diagnostics: [...diagnostics, ...read.diagnostics], fileTags: read.fileTags };
+  return {
+    diagnostics: [...diagnostics, ...read.diagnostics],
+    fileTags: read.fileTags,
+    hashedTags: [...new Set(read.hashed)].map((written) => ({
+      line: lineOfTag(blockLines, written),
+      written,
+    })),
+  };
 };
 
 type YamlBlock = { readonly parsed: unknown } | { readonly reason: string };
@@ -177,25 +216,39 @@ export const splitFrontmatter = (lines: readonly string[]): FrontmatterResult =>
   const closing = findBlockEnd(lines);
 
   if (closing === -1) {
-    return { body: lines, bodyStartLine: 1, data: {}, diagnostics: [], fileTags: [] };
+    return {
+      body: lines,
+      bodyStartLine: 1,
+      data: {},
+      diagnostics: [],
+      fileTags: [],
+      hashedTags: [],
+    };
   }
 
   const body = lines.slice(closing + 1);
   const bodyStartLine = closing + LINES_BEFORE_BODY;
-  const block = parseBlock(lines.slice(1, closing).join("\n"));
-  const bare = { body, bodyStartLine, data: {}, fileTags: [] };
+  const blockLines = lines.slice(1, closing);
+  const block = parseBlock(blockLines.join("\n"));
+  const bare = { body, bodyStartLine, data: {}, diagnostics: [], fileTags: [], hashedTags: [] };
 
   if ("reason" in block) {
-    const message = `the frontmatter block is not valid YAML and was skipped: ${block.reason}`;
-
-    return { ...bare, diagnostics: [diagnostic("unrepresentable-content", message)] };
+    return {
+      ...bare,
+      diagnostics: [
+        diagnostic(
+          "unrepresentable-content",
+          `the frontmatter block is not valid YAML and was skipped: ${block.reason}`,
+        ),
+      ],
+    };
   }
 
   if (!isRecord(block.parsed)) {
-    return { ...bare, diagnostics: [] };
+    return bare;
   }
 
-  const { diagnostics, fileTags } = readFileTags(block.parsed);
+  const { diagnostics, fileTags, hashedTags } = readFileTags(block.parsed, blockLines);
 
-  return { body, bodyStartLine, data: block.parsed, diagnostics, fileTags };
+  return { body, bodyStartLine, data: block.parsed, diagnostics, fileTags, hashedTags };
 };

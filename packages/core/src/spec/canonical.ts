@@ -1,12 +1,13 @@
 import type { Deck } from "../deck.js";
 import type { CardRegion } from "./document.js";
+import type { HashedTag } from "./frontmatter.js";
 import { parseWalk, type Walk, walkSource } from "./parse.js";
 import { isBlank, type ScannedLine, trimBlankEnds } from "./scan.js";
 import { isTagsOnlyLine } from "./tags.js";
 
 /*
- * The producer gate of §3.1: a producer MUST emit canonical form only and SHOULD fail
- * loudly rather than emit something that is merely valid.
+ * The producer gate of §3.1: a producer MUST use the canonical spelling of every
+ * construct that has one, and SHOULD fail loudly rather than emit a merely valid one.
  *
  * Two kinds of departure land here, and they come from different places:
  *
@@ -15,14 +16,16 @@ import { isTagsOnlyLine } from "./tags.js";
  *   producer rejects the same set, so every diagnostic becomes an issue here.
  *
  *   Tier 2, valid but not canonical. A consumer must read these correctly and says
- *   nothing about them, so they are checked only here. The spec names exactly three,
- *   and all three are below.
+ *   nothing about them, so they are checked only here. The spec names four — §5.3,
+ *   §5.4, §6.3 and §6.4 — and all four are below.
  *
- * What is deliberately absent is policy. §5.4 says a bullet-list back is an authoring
- * convention and not a grammar rule, and §5.5 says a producer MAY refuse an empty body
- * or a duplicate front. May, not must. A caller that wants those rules adds them to its
- * own output; putting them here would make this package refuse decks the format calls
- * conformant.
+ * What is deliberately absent is policy. §3.2 scopes the tier 2 obligation to
+ * spellings, and valid input that is not an alternative spelling of anything has no
+ * canonical form to be rewritten into: §5.4 makes a bullet-list back an authoring
+ * convention rather than a grammar rule, §5.5 lets a producer refuse an empty body or a
+ * duplicate front, and §4.1 obliges it to keep an unknown frontmatter key. A caller
+ * that wants those rules adds them to its own output; putting them here would make this
+ * package refuse decks the format calls conformant.
  */
 
 export interface CanonicalIssue {
@@ -151,6 +154,21 @@ const checkTagPlacement = (body: readonly ScannedLine[]): CanonicalIssue[] => {
   ];
 };
 
+/**
+ * §6.4: a frontmatter tag written bare.
+ *
+ * The `#` is stripped on read, so both spellings reach the deck as the same tag and no
+ * consumer can tell them apart. This gate is the only place that sees the difference,
+ * which is why the other three were once easy to find here and this one was not.
+ */
+const checkFrontmatterTags = (hashedTags: readonly HashedTag[]): CanonicalIssue[] =>
+  hashedTags.map(({ line, written }) => ({
+    lines: line === undefined ? [] : [line],
+    message:
+      `A frontmatter tag carries no leading "#": ` +
+      `write "${written.slice(1)}" rather than "${written}"`,
+  }));
+
 const checkCard = (region: CardRegion): CanonicalIssue[] => {
   const body = trimBlankEnds(region.body);
 
@@ -173,6 +191,7 @@ const reviewWalk = (walk: Walk): { deck: Deck; issues: CanonicalIssue[] } => {
         lines: item.line === undefined ? [] : [item.line],
         message: `${item.code}: ${item.message}`,
       })),
+      ...checkFrontmatterTags(walk.front.hashedTags),
       ...walk.document.regions.flatMap((region) => checkCard(region)),
     ],
   };

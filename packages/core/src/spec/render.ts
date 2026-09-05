@@ -9,12 +9,13 @@ import { isTagsOnlyLine, tagsInLine, uniqueTags } from "./tags.js";
  * only. A deck parsed from a canonical file renders back to that file byte for byte,
  * and a deck parsed from a merely valid one renders to the canonical spelling instead.
  *
- * The spec states exactly three places where canonical and valid differ, and this
- * module is where all three are decided:
+ * The spec states exactly four places where canonical and valid differ, and this
+ * module is where all four are decided:
  *
  *   §5.3  a blank line either side of the `***`
  *   §5.4  a blank line after the `##` heading, before the body
  *   §6.3  tags on their own line at the end of the card body
+ *   §6.4  a frontmatter tag written without a leading `#`
  *
  * Everything else is written back as it was read. Bodies are verbatim slices, so
  * nothing here re-wraps a paragraph, renumbers a list or touches a code fence.

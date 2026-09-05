@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest";
 import { checkCanonical, NotCanonicalError, parseCanonical } from "../src/spec/canonical.js";
 
 /*
- * The spec names exactly three places where canonical and valid differ. One test each,
+ * The spec names exactly four places where canonical and valid differ. One test each,
  * plus the boundary between what this gate rejects and what it deliberately allows.
  */
 
 const messagesFor = (source: string) => checkCanonical(source).map((issue) => issue.message);
 
-describe("the three canonical departures", () => {
+describe("the four canonical departures", () => {
   it("wants a blank line after the ## heading (§5.4)", () => {
     expect.hasAssertions();
 
@@ -53,6 +53,27 @@ describe("the three canonical departures", () => {
       [],
     );
   });
+
+  it("wants a frontmatter tag written bare (§6.4)", () => {
+    expect.hasAssertions();
+
+    expect(messagesFor('---\ntags:\n  - "#verbs"\n---\n\n## Card\n\n- a\n')).toStrictEqual([
+      'A frontmatter tag carries no leading "#": write "verbs" rather than "#verbs"',
+    ]);
+  });
+
+  it("names the line the hashed tag sits on", () => {
+    expect.hasAssertions();
+
+    const source = '---\ntags:\n  - ok\n  - "#verbs"\n---\n\n## Card\n\n- a\n';
+
+    expect(checkCanonical(source).map((issue) => issue.lines)).toStrictEqual([[4]]);
+  });
+
+  it("takes the stripped spelling as canonical", () => {
+    expect.hasAssertions();
+    expect(checkCanonical("---\ntags:\n  - verbs\n---\n\n## Card\n\n- a\n")).toStrictEqual([]);
+  });
 });
 
 describe("what the gate rejects and what it does not", () => {
@@ -73,6 +94,11 @@ describe("what the gate rejects and what it does not", () => {
   it("allows duplicate fronts, which §5.5 also calls valid", () => {
     expect.hasAssertions();
     expect(checkCanonical("## Same\n\n- a\n\n## Same\n\n- b\n")).toStrictEqual([]);
+  });
+
+  it("allows an unknown frontmatter key, which §4.1 obliges it to keep", () => {
+    expect.hasAssertions();
+    expect(checkCanonical("---\ntype: vocabulary\n---\n\n## Card\n\n- a\n")).toStrictEqual([]);
   });
 
   it("allows a back that is not a bullet list, which §5.4 calls a convention", () => {
