@@ -43,7 +43,7 @@ export { type ParseResult, parseMarkdown } from "./spec/parse.js";
 /*
  * The line scan, exported because a producer checking policy over its own output needs
  * to know what is inside a fence and nothing else does that job. `parseCanonical` covers
- * the grammar and the three canonical departures; the rules §5.5 leaves to a producer,
+ * the grammar and the four canonical departures; the rules §5.5 leaves to a producer,
  * such as insisting on a bullet-list back, are the caller's and are checked over the
  * caller's own lines. Without this they would each carry a second copy of the fence
  * tracking, which is the duplication this package exists to end.
