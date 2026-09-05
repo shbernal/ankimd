@@ -1,5 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  // `build` and `typecheck` run `tsc` per package, and every package tsconfig
+  // extends this one. Turbo's default inputs are the files inside a package
+  // directory, so without naming it here a change to the root config leaves
+  // every cache entry valid and the gate reports a hit over stale results.
+  // `.oxlintrc.json` and `.oxfmtrc.json` are deliberately absent: `lint` and
+  // `format:check` call oxlint and oxfmt directly rather than through turbo,
+  // so nothing caches a result that depends on them.
+  "globalDependencies": ["tsconfig.base.json"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
