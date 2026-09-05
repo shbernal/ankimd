@@ -1,6 +1,6 @@
 {
   "name": "@ankimd/core",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Convert Flashcard Markdown decks to and from Anki packages.",
   "keywords": [
     "anki",

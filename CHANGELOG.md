@@ -3,6 +3,43 @@
 Notable changes per release. Every package in this workspace is versioned and
 released together.
 
+## 0.0.6
+
+A diagnostic names the line it came from, and the producer gate holds a
+frontmatter tag to the fourth canonical spelling.
+
+### API
+
+A `Diagnostic` carries `line`: 1-based, counted from the first line of the file
+with the frontmatter included, and absent where there is none. `stray-h1`,
+`malformed-card-skipped` and `preamble-tag` carry one. The frontmatter pair and
+the two that fire at a conversion boundary do not, because there is no line to
+give. `atLine` is the mirror of `atCard` and is exported beside it, so a caller
+that raises a diagnostic of its own can point at a line the same way.
+
+Version 1.1 of the format is what names that field rather than leaving four
+implementations to spell it four ways, and the corpus is read from that version
+now. The fixtures themselves did not change: `line` is a MAY and no
+`expected.json` has a place to put one.
+
+### Fixes
+
+`checkCanonical` and `parseCanonical` report a frontmatter tag written with a
+leading `#`. §6.4 calls the stripped form canonical and `renderMarkdown` already
+wrote it, so the gate accepted files the serializer would have rewritten. The
+spec names four canonical spellings, not the three that three comments in this
+package claimed: §5.3, §5.4, §6.3 and §6.4.
+
+The suite now asserts the gate over the whole valid tier rather than only the
+serializer, which is what would have caught that. It is not "every valid case is
+reported": §3.2 scopes the tier 2 producer obligation to spellings, and four of
+the nine valid cases are not alternative spellings of anything. An unknown
+frontmatter key must be preserved (§4.1), an empty body and a duplicate front
+are a producer's own policy (§5.5), and a tag inside a sentence stays where the
+author wrote it (§6.3). All four are named in the suite and asserted to be
+accepted, because refusing one would be refusing a deck the format calls
+conformant.
+
 ## 0.0.5
 
 Fixes in both conversion paths, and four new exports from `@ankimd/core`, three
