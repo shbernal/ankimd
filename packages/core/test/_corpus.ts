@@ -61,6 +61,29 @@ export const casesIn = (tier: ManifestCase["tier"]): ManifestCase[] =>
  */
 export const PARSE_CANNOT_RAISE = new Set<DiagnosticCode>(["unresolved-image"]);
 
+/*
+ * §3.2 scopes the tier 2 producer obligation to spellings, and these four valid cases
+ * are not alternative spellings of anything: there is no canonical form to rewrite them
+ * into, so the gate accepts them and the serializer writes them back as they were.
+ *
+ *   §4.1 obliges a tool rewriting a deck to keep an unknown frontmatter key.
+ *   §5.5 lets a producer refuse an empty body or a duplicate front, rather than
+ *   obliging it to, and the only canonicalization available for a duplicate front is
+ *   renaming a heading, which moves card identity (§5.2).
+ *   §6.3 requires a tag written inside a sentence to be rendered where the author put
+ *   it. The tags-only line it also names does have a canonical position; this one has
+ *   none, which is why the case sits here and its siblings do not.
+ *
+ * A change that made the gate refuse any of the four would be this package refusing a
+ * deck the format calls conformant.
+ */
+export const VALID_WITHOUT_A_SPELLING = new Set<string>([
+  "valid/card-with-no-body",
+  "valid/duplicate-fronts",
+  "valid/tag-inline-in-prose",
+  "valid/unknown-frontmatter-keys",
+]);
+
 /** True when a case is invalid only for a reason no reader of the source can see. */
 export const isInvalidOffPage = (testCase: Readonly<ManifestCase>): boolean =>
   testCase.diagnostics.length > 0 &&

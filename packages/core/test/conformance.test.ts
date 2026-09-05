@@ -13,6 +13,7 @@ import {
   readExpected,
   readInput,
   SPEC_VERSION,
+  VALID_WITHOUT_A_SPELLING,
 } from "./_corpus.js";
 
 /*
@@ -133,6 +134,37 @@ describe("the conformance corpus, written as a producer", () => {
 
     expect(checkCanonical(rendered)).toStrictEqual([]);
     expect(renderMarkdown(parseMarkdown(rendered).deck)).toBe(rendered);
+  });
+
+  /*
+   * §3.2 tier 2 from the gate's side rather than the serializer's. The render test
+   * above proves the serializer picks the canonical spelling; this proves the gate can
+   * see the spelling it picked away from. Without it a canonical spelling can go
+   * unchecked while the corpus stays green, which is exactly what §6.4 did.
+   */
+  it.each(casesIn("valid").filter((item) => !VALID_WITHOUT_A_SPELLING.has(item.id)))(
+    "$id is reported as not canonical",
+    async ({ id }) => {
+      expect.hasAssertions();
+      expect(checkCanonical(await readInput(id))).not.toStrictEqual([]);
+    },
+  );
+
+  it.each(casesIn("valid").filter((item) => VALID_WITHOUT_A_SPELLING.has(item.id)))(
+    "$id is accepted, because §3.2 asks for a spelling and it has none",
+    async ({ id }) => {
+      expect.hasAssertions();
+      expect(checkCanonical(await readInput(id))).toStrictEqual([]);
+    },
+  );
+
+  it("names only cases the corpus still carries as valid without a spelling", () => {
+    expect.hasAssertions();
+    expect(
+      [...VALID_WITHOUT_A_SPELLING].filter(
+        (id) => !casesIn("valid").some((item) => item.id === id),
+      ),
+    ).toStrictEqual([]);
   });
 
   /* §3.2 tier 3: producers reject it. */
