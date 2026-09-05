@@ -19,7 +19,7 @@ export default defineConfig({
     },
     include: ["test/**/*.{test,spec}.ts"],
     /*
-     * Not the Vitest 4 default, which is `forks`. Threads are cheaper to start
+     * Not the Vitest default, which is `forks`. Threads are cheaper to start
      * and nothing here needs process isolation.
      */
     pool: "threads",

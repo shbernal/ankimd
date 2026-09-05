@@ -50,10 +50,10 @@
     "yargs": "^18.1.0"
   },
   "devDependencies": {
-    "@shbernal/anki-apkg-export": "^6.1.0",
+    "@shbernal/anki-apkg-export": "^6.1.1",
     "@types/prismjs": "^1.26.6",
     "@types/yargs": "^17.0.35",
-    "tsx": "^4.23.12"
+    "tsx": "^4.23.13"
   },
   "engines": {
     "node": ">=24"
