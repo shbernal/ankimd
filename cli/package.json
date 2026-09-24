@@ -47,13 +47,13 @@
     "@ankimd/core": "workspace:^",
     "fast-glob": "^3.3.3",
     "prismjs": "^1.30.0",
-    "yargs": "^18.1.0"
+    "yargs": "^18.2.0"
   },
   "devDependencies": {
     "@shbernal/anki-apkg-export": "^6.1.1",
     "@types/prismjs": "^1.26.6",
     "@types/yargs": "^17.0.35",
-    "tsx": "^4.23.13"
+    "tsx": "^4.23.15"
   },
   "engines": {
     "node": ">=24"

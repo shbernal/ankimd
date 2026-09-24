@@ -28,10 +28,10 @@ const FAILED = 1;
  * checkout. `../package.json` is this package's from `dist/` and from `src/` alike.
  */
 const version = (): string => {
+  const source = readFileSync(new URL("../package.json", import.meta.url), "utf8");
+
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- our own manifest.
-  const manifest = JSON.parse(
-    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
-  ) as { version: string };
+  const manifest = JSON.parse(source) as { version: string };
 
   return manifest.version;
 };

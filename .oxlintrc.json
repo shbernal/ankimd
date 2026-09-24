@@ -183,6 +183,14 @@
         "vitest/max-expects": "off",
         "vitest/no-hooks": "off",
 
+        // A helper declared inside the `describe` it serves — `roundTrip`,
+        // `buildDeck` — is scoped to the group whose cases call it. The rule's
+        // fix is to hoist it to module scope, where it sits above suites that
+        // have nothing to do with it and invites the next one to reuse a helper
+        // written for this group. The rule still applies to src, where a nested
+        // function that captures nothing is a module-level one in the wrong place.
+        "unicorn/consistent-function-scoping": "off",
+
         // The suites read the conformance corpus off disk, and `JSON.parse` returns
         // `any`. Asserting the shape at that boundary is the only thing available; a
         // guard would be a second, hand-written copy of the corpus schema whose drift
