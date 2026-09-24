@@ -83,8 +83,11 @@ export const readTemplate = async (directory: string): Promise<Template> => {
     throw new Error(`Template directory ${directory} has no ${missing.toSorted().join(", no ")}`);
   }
 
+  const entries = read.map((entry: Readonly<TemplateFile>): [string, string | null] => [
+    entry.field,
+    entry.contents,
+  ]);
+
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- keys are the ones above.
-  return Object.fromEntries(
-    read.map((entry: Readonly<TemplateFile>) => [entry.field, entry.contents]),
-  ) as unknown as Template;
+  return Object.fromEntries(entries) as unknown as Template;
 };
