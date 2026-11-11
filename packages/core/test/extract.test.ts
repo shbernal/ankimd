@@ -16,9 +16,25 @@ import { FIXTURE_DIR, FIXTURE_NOW, readFixtureDeck } from "./_fixture-deck.js";
  * round trip through real bytes is the last suite.
  */
 
-const BASIC: AnkiNotetype = { fields: ["Front", "Back"], id: 1, isCloze: false, name: "Basic" };
-const CLOZE: AnkiNotetype = { fields: ["Text", "Extra"], id: 2, isCloze: true, name: "Cloze" };
+/** What the extraction never reads off a note type. */
+const UNREAD = { css: "", sortField: 0, templates: [] } as const;
+
+const BASIC: AnkiNotetype = {
+  ...UNREAD,
+  fields: ["Front", "Back"],
+  id: 1,
+  isCloze: false,
+  name: "Basic",
+};
+const CLOZE: AnkiNotetype = {
+  ...UNREAD,
+  fields: ["Text", "Extra"],
+  id: 2,
+  isCloze: true,
+  name: "Cloze",
+};
 const OCCLUSION: AnkiNotetype = {
+  ...UNREAD,
   fields: ["Occlusion", "Image", "Header", "Back Extra", "Comments"],
   id: 3,
   isCloze: false,
@@ -31,6 +47,7 @@ const note = (
   mid = BASIC.id,
 ): AnkiNote => ({
   fields,
+  guid: `guid-${fields.length}`,
   id: 100 + fields.length,
   mid,
   tags,
@@ -40,7 +57,15 @@ const packageOf = (
   notes: readonly AnkiNote[],
   notetypes: readonly AnkiNotetype[] = [BASIC],
   media: ReadonlyMap<string, Uint8Array> = new Map(),
-): AnkiPackage => ({ media, notes, notetypes, packageVersion: 1, schemaVersion: 11 });
+): AnkiPackage => ({
+  cards: [],
+  decks: [],
+  media,
+  notes,
+  notetypes,
+  packageVersion: 1,
+  schemaVersion: 11,
+});
 
 describe("what a note becomes", () => {
   it("puts a one-line front on the heading and the whole body on the back", () => {
