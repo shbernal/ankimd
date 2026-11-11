@@ -1,6 +1,6 @@
 /*
- * Em dashes are the tell this bans, checked from one place: `pnpm prose`, the
- * `pre-commit` job in lefthook.yml, and CI. The scope is prose people read
+ * Em dashes are the tell this bans, checked from one place: `pnpm prose`, run
+ * locally and in CI. The scope is prose people read
  * rather than source, because a dash inside a fenced example is data.
  */
 const EM_DASH = "—";
