@@ -3,6 +3,18 @@
 Notable changes per release. Every package in this workspace is versioned and
 released together.
 
+## 0.0.7
+
+Dependency refresh. Nothing in the API changes.
+
+### Dependencies
+
+`@shbernal/anki-apkg-export` 6.2.0, which bundles sql.js 1.16 and with it SQLite
+3.54.1. A deck converts to the same notes, cards and media as before, but the
+SQLite file inside the `.apkg` is laid out in different bytes, so a package is
+not byte-identical to one 0.0.6 wrote from the same source. marked 18.2 and
+turndown 7.2.5 come along.
+
 ## 0.0.6
 
 A diagnostic names the line it came from, and the producer gate holds a
