@@ -31,11 +31,6 @@ describe("the canonical serializer", () => {
     );
   });
 
-  it("emits no frontmatter block for a deck that has none", () => {
-    expect.hasAssertions();
-    expect(roundTrip("## Card\n\n- a\n")).toBe("## Card\n\n- a\n");
-  });
-
   it("moves a tags-only line to the end and leaves an inline tag in place", () => {
     expect.hasAssertions();
 

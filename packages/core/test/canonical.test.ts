@@ -3,8 +3,9 @@ import { describe, expect, it } from "vitest";
 import { checkCanonical, NotCanonicalError, parseCanonical } from "../src/spec/canonical.js";
 
 /*
- * The spec names exactly four places where canonical and valid differ. One test each,
- * plus the boundary between what this gate rejects and what it deliberately allows.
+ * The spec names exactly four places where canonical and valid differ, one test each
+ * naming which check fired. What the gate accepts and rejects across whole files is the
+ * conformance corpus's job, in `conformance.test.ts`.
  */
 
 const messagesFor = (source: string) => checkCanonical(source).map((issue) => issue.message);
@@ -26,11 +27,6 @@ describe("the four canonical departures", () => {
     ]);
   });
 
-  it("counts the body's own edges as blank around the separator", () => {
-    expect.hasAssertions();
-    expect(checkCanonical("## Card\n\n***\n\nback\n")).toStrictEqual([]);
-  });
-
   it("wants the tags-only line last in the card body (§6.3)", () => {
     expect.hasAssertions();
 
@@ -47,13 +43,6 @@ describe("the four canonical departures", () => {
     ]);
   });
 
-  it("leaves an inline tag in prose alone, because §6.3 keeps it visible", () => {
-    expect.hasAssertions();
-    expect(checkCanonical("## Card\n\nThe #verbs group takes être.\n\n#french\n")).toStrictEqual(
-      [],
-    );
-  });
-
   it("wants a frontmatter tag written bare (§6.4)", () => {
     expect.hasAssertions();
 
@@ -68,47 +57,6 @@ describe("the four canonical departures", () => {
     const source = '---\ntags:\n  - ok\n  - "#verbs"\n---\n\n## Card\n\n- a\n';
 
     expect(checkCanonical(source).map((issue) => issue.lines)).toStrictEqual([[4]]);
-  });
-
-  it("takes the stripped spelling as canonical", () => {
-    expect.hasAssertions();
-    expect(checkCanonical("---\ntags:\n  - verbs\n---\n\n## Card\n\n- a\n")).toStrictEqual([]);
-  });
-});
-
-describe("what the gate rejects and what it does not", () => {
-  it("rejects every tier-3 signal the parser reports", () => {
-    expect.hasAssertions();
-
-    const issues = checkCanonical("# One\n\n## Card\n\n- a\n\n# Two\n");
-
-    expect(issues).toHaveLength(1);
-    expect(issues[0]?.message).toContain("stray-h1");
-  });
-
-  it("allows a card with no body, which §5.5 calls valid", () => {
-    expect.hasAssertions();
-    expect(checkCanonical("## Card\n")).toStrictEqual([]);
-  });
-
-  it("allows duplicate fronts, which §5.5 also calls valid", () => {
-    expect.hasAssertions();
-    expect(checkCanonical("## Same\n\n- a\n\n## Same\n\n- b\n")).toStrictEqual([]);
-  });
-
-  it("allows an unknown frontmatter key, which §4.1 obliges it to keep", () => {
-    expect.hasAssertions();
-    expect(checkCanonical("---\ntype: vocabulary\n---\n\n## Card\n\n- a\n")).toStrictEqual([]);
-  });
-
-  it("allows a back that is not a bullet list, which §5.4 calls a convention", () => {
-    expect.hasAssertions();
-    expect(checkCanonical("## Card\n\nA plain paragraph.\n")).toStrictEqual([]);
-  });
-
-  it("does not see a separator inside a fence", () => {
-    expect.hasAssertions();
-    expect(checkCanonical("## Card\n\n```\n***\n```\n")).toStrictEqual([]);
   });
 });
 

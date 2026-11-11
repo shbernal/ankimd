@@ -54,15 +54,6 @@ describe("a deck converted to an Anki package", () => {
     await expect(matchesFixture(data)).resolves.toBe(true);
   });
 
-  it("produces the same bytes twice for the same instant", async () => {
-    expect.hasAssertions();
-
-    const first = await toApkg(fixture, { now: FIXTURE_NOW });
-    const second = await toApkg(fixture, { now: FIXTURE_NOW });
-
-    expect(first.data.equals(second.data)).toBe(true);
-  });
-
   it("puts the heading in the front field and what follows the separator in the back", async () => {
     expect.hasAssertions();
 

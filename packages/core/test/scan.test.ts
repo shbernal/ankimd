@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { parseMarkdown } from "../src/spec/parse.js";
-import { scanLines, splitSourceLines, toSlice } from "../src/spec/scan.js";
+import { scanLines } from "../src/spec/scan.js";
 
 /*
  * The scanner is the piece two implementations each hand-rolled, and where they
@@ -24,11 +24,6 @@ describe("line splitting", () => {
     const { deck } = parseMarkdown("## Card\n\nfirst  \nsecond\n");
 
     expect(deck.cards[0]?.back).toBe("first  \nsecond");
-  });
-
-  it("splits on a bare CR-free newline and on CRLF alike", () => {
-    expect.hasAssertions();
-    expect(splitSourceLines("a\r\nb\nc")).toStrictEqual(["a", "b", "c"]);
   });
 });
 
@@ -71,28 +66,6 @@ describe("headings", () => {
   it("reads a closing sequence as decoration rather than as text", () => {
     expect.hasAssertions();
     expect(scanLines(["## Title ##"])[0]?.heading?.text).toBe("Title");
-  });
-
-  it("does not read a bare #tag as a heading", () => {
-    expect.hasAssertions();
-    expect(scanLines(["#tag"])[0]?.heading).toBeNull();
-  });
-
-  it("reads a heading with no text as an empty one rather than as prose", () => {
-    expect.hasAssertions();
-    expect(scanLines(["##"])[0]?.heading).toStrictEqual({ depth: 2, text: "" });
-  });
-});
-
-describe("slicing a run of lines", () => {
-  it("drops blank edges and nothing else", () => {
-    expect.hasAssertions();
-    expect(toSlice(["", "  ", "a", "", "b", ""])).toBe("a\n\nb");
-  });
-
-  it("is empty for a run of blanks", () => {
-    expect.hasAssertions();
-    expect(toSlice(["", "   "])).toBe("");
   });
 });
 

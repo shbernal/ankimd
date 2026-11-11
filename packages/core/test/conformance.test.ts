@@ -93,10 +93,7 @@ describe("the conformance corpus, read as a consumer", () => {
     async ({ id }) => {
       expect.hasAssertions();
 
-      const source = await readInput(id);
-
-      expect(() => parseMarkdown(source)).not.toThrow();
-      expect(parseMarkdown(source).deck.cards.length).toBeGreaterThan(0);
+      expect(parseMarkdown(await readInput(id)).deck.cards.length).toBeGreaterThan(0);
     },
   );
 });

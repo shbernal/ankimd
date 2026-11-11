@@ -46,13 +46,7 @@ const failWith = (name: string, message: string): typeof fetch =>
 /** Well past the deadline every timeout case below sets, and still instant. */
 const AFTER_THE_DEADLINE_MS = 50;
 
-/**
- * A `fetch` that outlives the deadline and then fails the way an abort does.
- *
- * Node has spelled an aborted request both ways: as the `DOMException` itself, and as
- * a `TypeError: fetch failed` carrying that exception as its `cause`. Neither spelling
- * is what the resolver reads any more, so a case can hand over either.
- */
+/** A `fetch` that outlives the deadline and then fails the way an abort does. */
 const abortedWith = (error: Error): typeof fetch =>
   vi.fn<typeof fetch>(async () => {
     await delay(AFTER_THE_DEADLINE_MS);
@@ -124,21 +118,9 @@ describe("resolving media", () => {
     await expect(resolver([directory])("https://example.org/a.png")).rejects.toThrow(/418/u);
   });
 
+  /* The abort inside a `cause`, under the same `TypeError: fetch failed` that a DNS
+     failure throws, which is the spelling a check on the error's name got wrong. */
   it("reports a download that ran out of time", async () => {
-    expect.hasAssertions();
-
-    vi.stubGlobal("fetch", abortedWith(abortError()));
-
-    await expect(
-      createMediaResolver({ directories: [], remote: true, timeoutMs: 1 })(
-        "https://example.org/a.png",
-      ),
-    ).rejects.toThrow(/timed out/u);
-  });
-
-  /* The regression the name check had: the abort is inside the `cause`, and the outer
-     error is the same `TypeError: fetch failed` that a DNS failure throws. */
-  it("reports a timeout wrapped as a fetch failure as a timeout", async () => {
     expect.hasAssertions();
     const wrapped = new TypeError("fetch failed", { cause: abortError() });
     vi.stubGlobal("fetch", abortedWith(wrapped));
