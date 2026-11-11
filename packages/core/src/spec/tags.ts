@@ -26,7 +26,7 @@ export const isTagToken = (token: string): boolean =>
  * positions that still line up with the source line.
  */
 const maskCodeSpans = (line: string): string =>
-  line.replace(CODE_SPAN, (match) => " ".repeat(match.length));
+  line.replaceAll(CODE_SPAN, (match) => " ".repeat(match.length));
 
 export const tagsInLine = (line: string): string[] =>
   [...maskCodeSpans(line).matchAll(TAG_IN_TEXT)]

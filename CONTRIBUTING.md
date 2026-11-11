@@ -12,7 +12,6 @@ against the contribution, it is context for reviewing it.
 
 ```sh
 pnpm install
-pnpm exec lefthook install
 ```
 
 The package manager version is pinned in `package.json`. Use it rather than a
@@ -30,8 +29,10 @@ pnpm test
 pnpm run build
 ```
 
-`lefthook` runs formatting, linting and the prose check on staged files before a
-commit, and the last three gates before a push.
+There are no git hooks; CI runs the gates, `pnpm run prose`, and a
+`commit-check` job that refuses AI attribution in commit messages (rules in
+`.github/cchk.toml`). The pull request template asks for the AI disclosure
+instead.
 
 ## Conventions
 
