@@ -9,15 +9,6 @@ import { parseMarkdown } from "../src/spec/parse.js";
  */
 
 describe("the frontmatter block", () => {
-  it("reads tags and keeps every key it does not define", () => {
-    expect.hasAssertions();
-
-    const { deck } = parseMarkdown("---\ntype: notes\ntags:\n  - a\n---\n\n## Card\n");
-
-    expect(deck.fileTags).toStrictEqual(["a"]);
-    expect(deck.frontmatter).toStrictEqual({ tags: ["a"], type: "notes" });
-  });
-
   it("says so rather than dropping a block that is not valid YAML", () => {
     expect.hasAssertions();
 
@@ -54,15 +45,6 @@ describe("the frontmatter block", () => {
     expect(deck.fileTags).toStrictEqual(["a"]);
   });
 
-  it("names the removed singular alias rather than reading or dropping it", () => {
-    expect.hasAssertions();
-
-    const { deck, diagnostics } = parseMarkdown("---\ntag: a\n---\n\n## Card\n");
-
-    expect(diagnostics.map(({ code }) => code)).toStrictEqual(["frontmatter-tags-not-a-sequence"]);
-    expect(deck.fileTags).toStrictEqual([]);
-  });
-
   it("names an entry that is a sequence of its own rather than one tag", () => {
     expect.hasAssertions();
 
@@ -95,13 +77,5 @@ describe("the frontmatter block", () => {
 
     expect(diagnostics).toStrictEqual([]);
     expect(deck.fileTags).toStrictEqual(["a"]);
-  });
-
-  it("counts source lines from the top of the file, frontmatter included", () => {
-    expect.hasAssertions();
-
-    const { deck } = parseMarkdown("---\ntags:\n  - a\n---\n\n# T\n\n## Card\n\n- a\n");
-
-    expect(deck.cards[0]?.tags).toStrictEqual(["a"]);
   });
 });

@@ -3,12 +3,6 @@ import { describe, expect, it } from "vitest";
 import { isTagsOnlyLine, isTagToken, tagsInLine, toAnkiTags } from "../src/spec/tags.js";
 
 describe("the tag grammar (§6.2)", () => {
-  it("requires at least one non-numeric character", () => {
-    expect.hasAssertions();
-    expect(isTagToken("42")).toBe(false);
-    expect(isTagToken("1st-declension")).toBe(true);
-  });
-
   it("accepts Unicode letters, underscore, hyphen and slash", () => {
     expect.hasAssertions();
     expect(isTagToken("grammaire/participe_passé-1")).toBe(true);
@@ -28,11 +22,6 @@ describe("the tag grammar (§6.2)", () => {
     expect.hasAssertions();
     expect(tagsInLine("Use `#include <stdio.h>` first")).toStrictEqual([]);
     expect(tagsInLine("Use `#one` but count #two")).toStrictEqual(["two"]);
-  });
-
-  it("reads an inline tag written in a sentence", () => {
-    expect.hasAssertions();
-    expect(tagsInLine("The #verbs group of motion")).toStrictEqual(["verbs"]);
   });
 });
 

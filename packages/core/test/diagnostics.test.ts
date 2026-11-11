@@ -12,11 +12,6 @@ const linesFor = (source: string) =>
   parseMarkdown(source).diagnostics.map(({ code, line }) => [code, line]);
 
 describe("where a diagnostic points", () => {
-  it("points at the second # heading", () => {
-    expect.hasAssertions();
-    expect(linesFor("# One\n\n## Card\n\n- a\n\n# Two\n")).toStrictEqual([["stray-h1", 7]]);
-  });
-
   it("points at the ## heading of the card it skipped", () => {
     expect.hasAssertions();
 
@@ -33,7 +28,7 @@ describe("where a diagnostic points", () => {
     ]);
   });
 
-  it("counts from the first line of the file, frontmatter included", () => {
+  it("points at the second # heading, counting from the top of the file", () => {
     expect.hasAssertions();
 
     expect(linesFor("---\ntitle: Deck\n---\n\n# One\n\n## Card\n\n- a\n\n# Two\n")).toStrictEqual([
