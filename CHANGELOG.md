@@ -3,6 +3,17 @@
 Notable changes per release. Every package in this workspace is versioned and
 released together.
 
+## 0.0.8
+
+A dependency fix. Nothing in the API changes.
+
+### Dependencies
+
+`@shbernal/anki-apkg-export` 6.2.1. `extract` used to read a version 2 package
+that had lost its `meta` entry as version 1, and so converted the placeholder
+collection Anki ships for old clients: one note asking to update Anki, and no
+error. It now reads `collection.anki21`, as Anki does.
+
 ## 0.0.7
 
 Dependency refresh. Nothing in the API changes.
