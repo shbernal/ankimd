@@ -210,8 +210,8 @@ importers:
         version: 18.2.0
     devDependencies:
       '@shbernal/anki-apkg-export':
-        specifier: ^6.2.0
-        version: 6.2.0
+        specifier: ^6.2.1
+        version: 6.2.1
       '@types/prismjs':
         specifier: ^1.26.6
         version: 1.26.6
@@ -231,8 +231,8 @@ importers:
   packages/core:
     dependencies:
       '@shbernal/anki-apkg-export':
-        specifier: ^6.2.0
-        version: 6.2.0
+        specifier: ^6.2.1
+        version: 6.2.1
       marked:
         specifier: ^18.2.0
         version: 18.2.0
@@ -836,8 +836,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@shbernal/anki-apkg-export@6.2.0':
-    resolution: {integrity: sha512-c+nYNOchlzitdM4hKotj13kmPciMtA8BO5KZbDcnleHjBsdbnxBSWLAu/L+t0wzcen6a6tM1t5lIB8gtKSzkhQ==}
+  '@shbernal/anki-apkg-export@6.2.1':
+    resolution: {integrity: sha512-SEjXRsxuRSmzpxBgY4Pm09AGwkFup1vuXtL1Xisn4CjSr68e85Vc0dNJ98seEWGrkmK2tV1NQT0F0PiwCINTqA==}
     engines: {node: '>=24'}
 
   '@turbo/darwin-64@2.11.10':
@@ -1826,7 +1826,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@shbernal/anki-apkg-export@6.2.0':
+  '@shbernal/anki-apkg-export@6.2.1':
     dependencies:
       fflate: 0.8.3
       sql.js: 1.16.0

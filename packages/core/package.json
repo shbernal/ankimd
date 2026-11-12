@@ -39,7 +39,7 @@
     "fixture:regen": "UPDATE_FIXTURE=1 vitest run test/apkg.test.ts"
   },
   "dependencies": {
-    "@shbernal/anki-apkg-export": "^6.2.0",
+    "@shbernal/anki-apkg-export": "^6.2.1",
     "marked": "^18.2.0",
     "marked-highlight": "^2.2.4",
     "turndown": "^7.2.5",
